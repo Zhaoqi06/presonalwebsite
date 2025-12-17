@@ -26,7 +26,7 @@ if submit:
         st.session_state.logged_in = True
         st.session_state["username"] = username
         st.success("登录成功，跳转中...")
-        st.switch_page("main.py")
+        st.switch_page("streamlit.py")
     else:
         st.error("用户名或密码错误")
 
