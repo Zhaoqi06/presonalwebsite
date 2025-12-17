@@ -25,7 +25,7 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    file_Path = "document\协会现有成员信息表.xlsx"
+    file_Path = "document/协会现有成员信息表.xlsx"
     file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
@@ -153,7 +153,7 @@ elif nav == "论文":
     with st.expander("智能流水车间调度与优化的仿真模拟——基于Python的遥控器生产线建模与优化"):
         st.subheader("第一届全国大学生仿真建模应用挑战赛")
         # 使用 pdf_viewer 替代 st.pdf()
-        pdf_path = "document\ACSFJM2512633.pdf"
+        pdf_path = "document/ACSFJM2512633.pdf"
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 pdf_viewer(f.read(), width=700, height=600)
