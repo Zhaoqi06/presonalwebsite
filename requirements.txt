@@ -1,2 +1,2 @@
 streamlit >= 1.12.0
-sstreamlit-pdf-viewer>=0.0.26
+streamlit-pdf-viewer>=0.0.26
