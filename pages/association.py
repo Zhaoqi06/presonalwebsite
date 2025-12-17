@@ -17,7 +17,7 @@ if nav == "首页":
     st.write(
         "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
     st.divider()
-    video_path = r"D:\pycharm\Application\personalwebsite\vedio\一带一路.mp4"
+    video_path = "vedio/一带一路.mp4"
     if os.path.exists(video_path):
         st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
     else:
@@ -25,7 +25,7 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    file_Path = r"D:\pycharm\Application\personalwebsite\document\协会现有成员信息表.xlsx"
+    file_Path = "document\协会现有成员信息表.xlsx"
     file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
@@ -94,7 +94,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r'E:\国际交流协会（四川信息职业技术学院）\活动资料\2025年10月10日-10月15日国际交流协会迎接2025级国际新生\2025年10月10日-10月15日国际交流协会迎接2025级国际新生\2025年10月10日-15日国际交流协会迎接2025级国际学生志愿活动\照片 (1)\照片\733fd3907fefd04f171a09d75550fc61.jpeg',
+            "image/迎新.jpeg",
             caption='迎新活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -114,7 +114,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r"E:\国际交流协会（四川信息职业技术学院）\活动资料\2025年11月1日国际交流协会“认识你很高兴”破冰活动\照片\ca8ad9cac1ce9ce3ddd53b8935d48670.jpg",
+            "image/破冰.jpeg",
             caption='破冰活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -135,7 +135,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r"E:\国际交流协会（四川信息职业技术学院）\活动资料\2025年12月4日国际交流协会剪纸活动\图片\QQ图片20251205234054(6).jpeg",
+            "image/剪纸.jpeg",
             caption='非遗剪纸交流活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
