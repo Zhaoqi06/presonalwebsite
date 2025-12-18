@@ -1,5 +1,5 @@
 import streamlit as st
-import association as ac
+from association import Name,ID
 st.set_page_config(page_title="登录", page_icon=":lock:", layout="centered")
 # 初始化session状态
 if "is_login" not in st.session_state:
@@ -20,7 +20,7 @@ with st.form("login"):
     submit = st.form_submit_button("登录", type="primary")
 
 # 校验+保存（核心：session_state)
-valid_users = {ac.Name(): ac.ID()}
+valid_users = {Name(): ID()}
 if submit:
     if username in valid_users and valid_users[username] == password:
         # 设置登录状态
