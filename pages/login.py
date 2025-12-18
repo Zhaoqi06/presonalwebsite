@@ -1,5 +1,5 @@
 import streamlit as st
-from pages.association import Name,ID
+from association import Name,ID
 st.set_page_config(page_title="登录", page_icon=":lock:", layout="centered")
 # 初始化session状态
 if "is_login" not in st.session_state:
