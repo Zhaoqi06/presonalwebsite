@@ -1,11 +1,13 @@
 import streamlit as st
+import pandas as pd  # 补充缺失的导入
+
 file_Path = "document/协会现有成员信息表.xlsx"
 file_data = pd.read_excel(file_Path, engine='openpyxl')
 try:
     # 成员数量
     length = len(file_data.iloc[:, 6])
     temp_length = 0
-     for i in range(length):
+    for i in range(length):  # 修复此处多余的缩进
         if file_data.iloc[i, 6] != 1:
             temp_length += 1
         else:
@@ -26,7 +28,7 @@ try:
         return id
     def Identity():
         return identity
-except:
+except Exception as e:  # 修复：补充Exception as e，否则e未定义
     print(e)
 
 
@@ -50,18 +52,13 @@ with st.form("login"):
     submit = st.form_submit_button("登录", type="primary")
 
 # 校验+保存（核心：session_state)
-valid_users = dict(zip(Name(), ID())) 
+valid_users = dict(zip(Name(), ID()))  # 修复：将姓名和ID映射为{用户名:密码}字典
 if submit:
     if username in valid_users and valid_users[username] == password:
-        # 设置登录状态
-        st.session_state.logged_in = True
+        # 设置登录状态（修复：统一session_state的key为is_login）
+        st.session_state["is_login"] = True
         st.session_state["username"] = username
         st.success("登录成功，跳转中...")
         st.switch_page("streamlit_app.py")
     else:
         st.error("用户名或密码错误")
-
-
-
-
-
