@@ -5,39 +5,33 @@ import os
 
 file_Path = "document/协会现有成员信息表.xlsx"
 file_data = pd.read_excel(file_Path, engine='openpyxl')
-    try:
-        # 成员数量
-        length = len(file_data.iloc[:, 6])
-        temp_length = 0
-        for i in range(length):
-            if file_data.iloc[i, 6] != 1:
-                temp_length += 1
-            else:
-                break
-        length = temp_length
-        # 主键数据唯一性标识
-        name = []
-        id = []
-        identity = []
-        for i in range(length):
-            name.append(file_data.iloc[i, 6])
-            id.append(str(file_data.iloc[i, 5]))
-            identity.append(file_data.iloc[i, 9])
-        Mark = file_data.iloc[:, 6]
-
-
-        def Name():
-            return name
-
-
-        def ID():
-            return id
-
-
-        def Identity():
-            return identity
-    except:
-        print(e)
+try:
+    # 成员数量
+    length = len(file_data.iloc[:, 6])
+    temp_length = 0
+     for i in range(length):
+        if file_data.iloc[i, 6] != 1:
+            temp_length += 1
+        else:
+            break
+    length = temp_length
+    # 主键数据唯一性标识
+    name = []
+    id = []
+    identity = []
+    for i in range(length):
+        name.append(file_data.iloc[i, 6])
+        id.append(str(file_data.iloc[i, 5]))
+        identity.append(file_data.iloc[i, 9])
+    Mark = file_data.iloc[:, 6]
+    def Name():
+        return name
+    def ID():
+        return id
+    def Identity():
+        return identity
+except:
+    print(e)
 
 
 st.set_page_config(page_title="协会", layout="wide")
