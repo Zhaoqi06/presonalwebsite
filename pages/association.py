@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 file_Path = "document/协会现有成员信息表.xlsx"
-    file_data = pd.read_excel(file_Path, engine='openpyxl')
+file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
         length = len(file_data.iloc[:, 6])
