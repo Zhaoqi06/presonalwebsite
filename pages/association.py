@@ -2,30 +2,8 @@ import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 import pandas as pd
 import os
-st.set_page_config(page_title="协会", layout="wide")
 
-# 拦截未登录用户
-if "logged_in" not in st.session_state or not st.session_state.logged_in:
-    st.error("请先登录")
-    st.switch_page("pages/login.py")
-
-# 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动风采","照片", "奖状", "论文"])
-
-if nav == "首页":
-    st.title("国际交流协会")
-    st.write(
-        "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
-    st.divider()
-    video_path = "vedio/一带一路.mp4"
-    if os.path.exists(video_path):
-        st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
-    else:
-        st.error(f"视频文件未找到：{os.path.abspath(video_path)}")
-
-
-elif nav == "协会成员":
-    file_Path = "document/协会现有成员信息表.xlsx"
+file_Path = "document/协会现有成员信息表.xlsx"
     file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
@@ -60,6 +38,31 @@ elif nav == "协会成员":
             return identity
     except:
         print(e)
+
+
+st.set_page_config(page_title="协会", layout="wide")
+
+# 拦截未登录用户
+if "logged_in" not in st.session_state or not st.session_state.logged_in:
+    st.error("请先登录")
+    st.switch_page("pages/login.py")
+
+# 使用 selectbox 实现导航
+nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动风采","照片", "奖状", "论文"])
+
+if nav == "首页":
+    st.title("国际交流协会")
+    st.write(
+        "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
+    st.divider()
+    video_path = "vedio/一带一路.mp4"
+    if os.path.exists(video_path):
+        st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
+    else:
+        st.error(f"视频文件未找到：{os.path.abspath(video_path)}")
+
+
+elif nav == "协会成员":
     # -------------------------------------------------------------------------------------
     st.title("国际交流协会成员信息表")
     st.write("#### 国际交流协会负责人信息")
