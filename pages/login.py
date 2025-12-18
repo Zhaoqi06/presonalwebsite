@@ -74,7 +74,7 @@ def load_user_data():
 user_data = load_user_data()
 
 # 登录表单
-st.title("协会成员登录系统")
+st.title("登录系统")
 with st.form("login_form", clear_on_submit=False):
     username = st.text_input("用户名", placeholder="请输入您的姓名", value="")
     password = st.text_input("密码", type="password", placeholder="请输入您的ID号", value="")
