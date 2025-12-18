@@ -50,7 +50,7 @@ with st.form("login"):
     submit = st.form_submit_button("登录", type="primary")
 
 # 校验+保存（核心：session_state)
-valid_users = {Name(),ID()}
+valid_users = dict(zip(Name(), ID())) 
 if submit:
     if username in valid_users and valid_users[username] == password:
         # 设置登录状态
