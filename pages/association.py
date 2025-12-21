@@ -10,7 +10,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.switch_page("pages/login.py")
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动风采","照片", "奖状", "论文"])
+nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动风采","照片", "奖状"])
 
 if nav == "首页":
     st.title("国际交流协会")
@@ -142,14 +142,4 @@ elif nav == "照片":
 elif nav == "奖状":
     st.title("奖状")
 
-elif nav == "论文":
-    st.title("论文")
-    with st.expander("智能流水车间调度与优化的仿真模拟——基于Python的遥控器生产线建模与优化"):
-        st.subheader("第一届全国大学生仿真建模应用挑战赛")
-        # 使用 pdf_viewer 替代 st.pdf()
-        pdf_path = "document/ACSFJM2512633.pdf"
-        if os.path.exists(pdf_path):
-            with open(pdf_path, "rb") as f:
-                pdf_viewer(f.read(), width=700, height=600)
-        else:
-            st.error(f"PDF文件未找到：{pdf_path}")
+
