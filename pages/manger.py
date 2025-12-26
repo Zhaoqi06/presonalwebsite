@@ -25,7 +25,7 @@ if "刘钊齐" == st.session_state["username"]:
             if not title_input or not text_input or not time_input:
                 st.error("请填写完整的信息")
             else:
-                card_file_path = r"E:\Project_Document\Python\pycharm\Application\personalwebsite\document\card_file.txt"
+                card_file_path = "document\card_file.txt"
                 with open(card_file_path,'a',encoding = "utf-8") as f:
                     f.write("标题:"+title_input+"\n")
                     f.write("文本:"+text_input+"\n")
