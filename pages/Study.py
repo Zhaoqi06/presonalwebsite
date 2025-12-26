@@ -2,7 +2,6 @@ import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 import pandas as pd
 import os
-
 # 拦截未登录用户
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
@@ -14,22 +13,45 @@ if nav == "首页":
     st.markdown("<style>.stApp{background:linear-gradient(123deg,#F1FAEE 0%,#A8DADC 100%);}</style>",unsafe_allow_html=True)
     st.title("欢迎来到学习板块！")
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
+
     st.divider()
-    card1 = st.container(border = True)
-    with card1:
-        st.subheader("行课通知")
-        st.write("由于授课结构调整，本次会有短期行课安排，行课时间为2025/12/22日开始的每周六下午，具体时间听从安排。")
-        st.write("行课内容为 数学必修一 必修二 必修三 必修四 必修五 选修4-5.各位同学提前准备！")
+    card_file_path = "document\card_file.txt"
+    with open(card_file_path, 'r', encoding="utf-8") as f:
+        data = f.readlines()
+        new_title = []
+        new_text = []
+        new_time = []
+
+        for line in data:
+            if line[:2] == "标题":
+                new_title.append(line[3:].strip())
+            if line[:2] == "文本":
+                new_text.append(line[3:].strip())
+            if line[:2] == "时间":
+                new_time.append(line[3:].strip())
+
+    card = st.container(border=True)
+    # 获取三个列表中最短的长度，避免索引越界
+    min_length = min(len(new_title), len(new_text), len(new_time))
+    for i in range(min_length):  # 使用 min_length 而不是 len(new_title)
+        card_name = "card" + str(i + 1)
+        card = st.container(border=True)
+        with card:
+            st.subheader(new_title[i])
+            st.write(new_text[i])
+            st.write(f"时间：{new_time[i]}")
+
+
+
 
 elif nav == "论文":
     st.title("论文")
     with st.expander("智能流水车间调度与优化的仿真模拟——基于Python的遥控器生产线建模与优化"):
         st.subheader("第一届全国大学生仿真建模应用挑战赛")
         # 使用 pdf_viewer 替代 st.pdf()
-        pdf_path = "document/ACSFJM2512633.pdf"
+        pdf_path = "document\ACSFJM2512633.pdf"
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 pdf_viewer(f.read(), width=700, height=600)
         else:
             st.error(f"PDF文件未找到：{pdf_path}")
-
