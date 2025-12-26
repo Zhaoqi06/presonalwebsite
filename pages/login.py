@@ -31,7 +31,7 @@ def load_user_data():
         "identity": [],
         "valid_map": {}  # 用户名: 密码（ID）映射
     }
-    file_path = "../document/协会现有成员信息表.xlsx"
+    file_path = "document/协会现有成员信息表.xlsx"
     
     try:
         # 读取Excel文件
