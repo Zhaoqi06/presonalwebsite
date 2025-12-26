@@ -31,6 +31,58 @@ if "刘钊齐" == st.session_state["username"]:
                     f.write("文本:"+text_input+"\n")
                     f.write(f"时间:{time_input}\n")
                     f.write("\n")
+                    f.close()
+        st.divider()
+        st.header("删除通知")
+
+        with st.form("delete_form"):
+            title_input = st.text_input("标题")
+            time_input = st.date_input("时间")
+            submit_btn = st.form_submit_button("提交")
+
+        if submit_btn:
+            # 问题1修正：使用相对路径拼接（适配本地+Streamlit Cloud）
+            # 获取当前脚本所在目录
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            # 拼接card_file.txt路径（根据你的目录结构调整../的数量）
+            # 假设：当前脚本在pages文件夹，document在项目根目录（与pages同级）
+            card_file_path = os.path.join(script_dir, "..", "document", "card_file.txt")
+            # 标准化路径（自动处理../、\\等符号）
+            card_file_path = os.path.normpath(card_file_path)
+
+            # 问题2修正：将datetime.date转为与文件一致的字符串格式（假设文件中是"YYYY-MM-DD"格式）
+            time_input_str = time_input.strftime("%Y-%m-%d")
+
+            try:
+                # 1. 读取文件所有内容
+                with open(card_file_path, 'r+', encoding="utf-8") as f:
+                    lines = f.readlines()
+
+                # 问题3、5修正：避免遍历中删除元素，先记录需要保留的行
+                new_lines = []
+                i = 0
+                while i < len(lines):
+                    # 匹配标题和日期（使用转换后的字符串）
+                    if (title_input in lines[i]) and (i + 2 < len(lines)) and (time_input_str in lines[i + 2]):
+                        # 匹配成功：跳过这3行（即不添加到new_lines，等同于删除）
+                        i += 3  # 跳过i、i+1、i+2
+                    else:
+                        # 匹配失败：保留当前行，i递增1
+                        new_lines.append(lines[i])
+                        i += 1
+
+                # 问题4修正：将修改后的内容写回文件（w模式覆盖原文件）
+                with open(card_file_path, 'w', encoding="utf-8") as f:
+                    f.writelines(new_lines)
+
+                st.success("通知删除成功！")
+
+            except FileNotFoundError:
+                st.error(f"错误：找不到文件 {card_file_path}，请检查文件路径是否正确")
+            except IndexError:
+                st.error("错误：文件内容格式异常，未找到对应的日期行")
+            except Exception as e:
+                st.error(f"删除失败：{str(e)}")
 
 
 else:
