@@ -43,18 +43,8 @@ if "刘钊齐" == st.session_state["username"]:
             submit_btn = st.form_submit_button("提交")
 
         if submit_btn:
-            # 问题1修正：使用相对路径拼接（适配本地+Streamlit Cloud）
-            # 获取当前脚本所在目录
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            # 拼接card_file.txt路径（根据你的目录结构调整../的数量）
-            # 假设：当前脚本在pages文件夹，document在项目根目录（与pages同级）
-            card_file_path = os.path.join(script_dir, "..", "document", "card_file.txt")
-            # 标准化路径（自动处理../、\\等符号）
-            card_file_path = os.path.normpath(card_file_path)
-
-            # 问题2修正：将datetime.date转为与文件一致的字符串格式（假设文件中是"YYYY-MM-DD"格式）
+            card_file_path = "document\card_file.txt"
             time_input_str = time_input.strftime("%Y-%m-%d")
-
             try:
                 # 1. 读取文件所有内容
                 with open(card_file_path, 'r+', encoding="utf-8") as f:
