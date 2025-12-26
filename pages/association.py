@@ -42,11 +42,11 @@ elif nav == "协会成员":
         id = []
         identity = []
         for i in range(length):
-            name.append(file_data.iloc[i, 6])
-            id.append(str(file_data.iloc[i, 5]))
-            if file_data.iloc[i, 9] != "非国际交流协会成员":
+            if file_data.iloc[i, 9] == "非国际交流协会成员":
                 continue
             else:
+                name.append(file_data.iloc[i, 6])
+                id.append(str(file_data.iloc[i, 5]))
                 identity.append(file_data.iloc[i, 9])
         Mark = file_data.iloc[:, 6]
         def Name():
