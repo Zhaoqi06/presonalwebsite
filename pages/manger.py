@@ -33,6 +33,7 @@ if "刘钊齐" == st.session_state["username"]:
                     f.write("文本:"+text_input+"\n")
                     f.write(f"时间:{time_input}\n")
                     f.write("\n")
+                    st.success("分布成功！")
                     f.close()
         st.divider()
         st.header("删除通知")
