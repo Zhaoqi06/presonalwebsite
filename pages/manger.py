@@ -47,9 +47,8 @@ if "刘钊齐" == st.session_state["username"]:
             time_input_str = time_input.strftime("%Y-%m-%d")
             try:
                 # 1. 读取文件所有内容
-                with open(card_file_path, 'r+', encoding="utf-8") as f:
+                with open(card_file_path, 'r', encoding="utf-8") as f:
                     lines = f.readlines()
-
                 # 问题3、5修正：避免遍历中删除元素，先记录需要保留的行
                 new_lines = []
                 i = 0
