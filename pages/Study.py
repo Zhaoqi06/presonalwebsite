@@ -40,6 +40,7 @@ if nav == "首页":
             st.subheader(new_title[i])
             st.write(new_text[i])
             st.write(f"时间：{new_time[i]}")
+            f.close()
 
 
 
