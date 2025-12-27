@@ -68,6 +68,7 @@ if "刘钊齐" == st.session_state["username"]:
                     f.writelines(new_lines)
 
                 st.success("通知删除成功！")
+                f.close()
 
             except FileNotFoundError:
                 st.error(f"错误：找不到文件 {card_file_path}，请检查文件路径是否正确")
