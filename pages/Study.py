@@ -10,7 +10,6 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 # 使用 selectbox 实现导航
 nav = st.sidebar.selectbox("导航栏", ["首页","任务查看","提交入口", "高等数学","线性代数","英语四级", "英语六级","雅思","TED","专四","专升本", "计算机","Python","C语言","MATLAB","STM32","51单片机","MYSQL","数学竞赛","英语竞赛","论文"])
 if nav == "首页":
-    #st.    #st.markdown("<style>.stApp{background:linear-gradient(123deg,#F1FAEE 0%,#A8DADC 100%);}</style>",unsafe_allow_ht
     st.title("欢迎来到学习板块！")
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
 
