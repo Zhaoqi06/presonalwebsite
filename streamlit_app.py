@@ -18,7 +18,7 @@ with col2:
         st.switch_page("pages/association.py")
 with col3:
     if st.button("实用工具"):
-        st.switch_page("pages/association.py")
+        st.switch_page("pages/tool.py")
 with col4:
     if st.button("学习资料"):
         st.switch_page("pages/Study.py")
