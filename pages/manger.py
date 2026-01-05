@@ -1,10 +1,14 @@
 import streamlit as st
 import os
 from datetime import datetime
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
     st.switch_page("pages/login.py")
+
 # 隐藏默认导航/水印
 st.markdown("""
             <style>
@@ -15,26 +19,58 @@ st.markdown("""
 if "刘钊齐" == st.session_state["username"]:
     st.title("欢迎进入管理页面")
     st.divider()
-    nav = st.sidebar.selectbox("导航栏",["首页", "数学教学"])
+    nav = st.sidebar.selectbox("导航栏", ["首页", "数学教学"])
     if nav == "首页":
-        st.header("分布通知")
+        st.header("发布通知")
+
+        # 获取当前脚本所在目录
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        docx_file_path = os.path.join(script_dir, "..", "document", "notifications.docx")
+        docx_file_path = os.path.normpath(docx_file_path)
+
         with st.form("input_form"):
             title_input = st.text_input("标题")
             text_input = st.text_area("文本")
             time_input = st.date_input("时间")
             submit_btn = st.form_submit_button("提交")
+
         if submit_btn:
             if not title_input or not text_input or not time_input:
                 st.error("请填写完整的信息")
             else:
-                card_file_path = "document\card_file.txt"
-                with open(card_file_path,'a',encoding = "utf-8") as f:
-                    f.write("标题:"+title_input+"\n")
-                    f.write("文本:"+text_input+"\n")
-                    f.write(f"时间:{time_input}\n")
-                    f.write("\n")
-                    st.success("分布成功！")
-                    f.close()
+                try:
+                    # 检查文件是否存在，不存在则创建新文档
+                    if os.path.exists(docx_file_path):
+                        doc = Document(docx_file_path)
+                    else:
+                        doc = Document()
+
+                    # 添加标题
+                    title_para = doc.add_paragraph()
+                    title_run = title_para.add_run(f"标题: {title_input}")
+                    title_run.bold = True
+                    title_run.font.size = Pt(14)
+
+                    # 添加内容
+                    content_para = doc.add_paragraph()
+                    content_para.add_run(f"文本: {text_input}")
+
+                    # 添加时间
+                    time_para = doc.add_paragraph()
+                    time_run = time_para.add_run(f"时间: {time_input}")
+                    time_run.font.size = Pt(10)
+
+                    # 添加分隔线
+                    separator_para = doc.add_paragraph()
+                    separator_run = separator_para.add_run("-" * 50)
+                    separator_run.font.size = Pt(8)
+
+                    # 保存文档
+                    doc.save(docx_file_path)
+                    st.success("发布成功！")
+                except Exception as e:
+                    st.error(f"发布失败：{str(e)}")
+
         st.divider()
         st.header("删除通知")
 
@@ -43,47 +79,46 @@ if "刘钊齐" == st.session_state["username"]:
             time_input = st.date_input("时间")
             submit_btn = st.form_submit_button("提交")
 
+        # 在删除功能部分使用更精确的匹配
         if submit_btn:
-            card_file_path = "document\card_file.txt"
-            time_input_str = time_input.strftime("%Y-%m-%d")
             try:
-                # 1. 读取文件所有内容
-                with open(card_file_path, 'r', encoding="utf-8") as f:
-                    lines = f.readlines()
-                # 问题3、5修正：避免遍历中删除元素，先记录需要保留的行
-                new_lines = []
+                if not os.path.exists(docx_file_path):
+                    st.error("文档不存在")
+                    st.stop()
+
+                doc = Document(docx_file_path)
+
+                # 更精确地查找通知块
+                paragraphs_text = [p.text for p in doc.paragraphs]
+                paragraphs_to_remove = []
+
                 i = 0
-                while i < len(lines):
-                    # 匹配标题和日期（使用转换后的字符串）
-                    if (title_input in lines[i]) and (i + 2 < len(lines)) and (time_input_str in lines[i + 2]):
-                        # 匹配成功：跳过这3行（即不添加到new_lines，等同于删除）
-                        i += 3  # 跳过i、i+1、i+2
+                while i < len(paragraphs_text):
+                    # 查找标题段落
+                    if paragraphs_text[i].startswith("标题:") and title_input in paragraphs_text[i]:
+                        # 检查是否在接下来的几段内有对应的时间
+                        for j in range(i, min(i + 4, len(paragraphs_text))):
+                            if paragraphs_text[j].startswith("时间:") and str(time_input) in paragraphs_text[j]:
+                                # 找到匹配的通知块，标记要删除的段落
+                                paragraphs_to_remove.extend(range(i, min(i + 4, len(paragraphs_text))))
+                                i = min(i + 4, len(paragraphs_text))  # 跳过已处理的通知块
+                                break
+                        else:
+                            i += 1
                     else:
-                        # 匹配失败：保留当前行，i递增1
-                        new_lines.append(lines[i])
                         i += 1
 
-                # 问题4修正：将修改后的内容写回文件（w模式覆盖原文件）
-                with open(card_file_path, 'w', encoding="utf-8") as f:
-                    f.writelines(new_lines)
+                # 从后往前删除段落
+                for idx in sorted(paragraphs_to_remove, reverse=True):
+                    if idx < len(doc.paragraphs):
+                        p = doc.paragraphs[idx]._element
+                        p.getparent().remove(p)
 
+                # 保存文档
+                doc.save(docx_file_path)
                 st.success("通知删除成功！")
-                f.close()
 
-            except FileNotFoundError:
-                st.error(f"错误：找不到文件 {card_file_path}，请检查文件路径是否正确")
-            except IndexError:
-                st.error("错误：文件内容格式异常，未找到对应的日期行")
             except Exception as e:
                 st.error(f"删除失败：{str(e)}")
-
-
 else:
     st.error("非管理员人员不能进入该页面")
-
-
-
-    #with card1:
-        #st.subheader("行课通知")
-        #st.write("由于授课结构调整，本次会有短期行课安排，行课时间为2025/12/22日开始的每周六下午，具体时间听从安排。")
-        #st.write("行课内容为 数学必修一 必修二 必修三 必修四 必修五 选修4-5.各位同学提前准备！")
