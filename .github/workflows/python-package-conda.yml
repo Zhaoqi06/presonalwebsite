@@ -9,39 +9,44 @@ jobs:
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    # 初始化Conda并配置环境变量
-    - name: Initialize Conda
-      run: |
-        conda init bash
-        echo "CONDA_ENVS_PATH=$CONDA/envs" >> $GITHUB_ENV
-    
-    # 安装系统依赖（ffmpeg），解决媒体处理依赖问题
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update -y
-        sudo apt-get install -y ffmpeg --no-install-recommends
-    
-    # 创建独立Conda环境（避免污染base环境）
-    - name: Create Conda environment
-      run: conda create -n app_env python=3.10 -y
-    
-    # 安装Python依赖（通过conda run指定环境，配清华源加速）
-    - name: Install Python dependencies
-      run: |
-        conda run -n app_env pip install --upgrade pip
-        conda run -n app_env pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-    
-    # 代码检查（flake8），确保代码无语法错误
-    - name: Lint with flake8
-      run: |
-        conda run -n app_env pip install flake8
-        conda run -n app_env flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        conda run -n app_env flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      # 1. 检出仓库代码到GitHub Actions运行环境
+      - uses: actions/checkout@v4
 
-    # 已移除pytest步骤（无测试用例时无需保留）
+      # 2. 配置Python 3.10环境（匹配项目依赖）
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. 初始化Conda环境（解决GitHub Actions中conda命令兼容问题）
+      - name: Initialize Conda
+        run: |
+          echo ". $CONDA/etc/profile.d/conda.sh" >> ~/.bashrc
+          source ~/.bashrc
+          conda config --set always_yes yes --set changeps1 no
+
+      # 4. 安装系统级依赖（ffmpeg），解决媒体文件处理依赖
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+
+      # 5. 核心步骤：创建Conda环境 + 安装Python依赖（合并为单个步骤）
+      - name: Install dependencies
+        run: |
+          # 创建独立的Conda环境（app_env），指定Python 3.10，-y自动确认
+          conda create -n app_env python=3.10 -y
+          # 在app_env环境中升级pip
+          conda run -n app_env pip install --upgrade pip
+          # 安装requirements.txt中的所有依赖，配置清华源加速下载
+          conda run -n app_env pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+      # 6. 代码检查（flake8）：检测语法错误/未定义变量等问题
+      - name: Lint with flake8
+        run: |
+          # 在app_env环境中安装flake8
+          conda run -n app_env pip install flake8
+          # 检测致命错误（如语法错误、未定义变量），失败则终止构建
+          conda run -n app_env flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # 检测代码规范问题（仅警告，不终止构建）
+          conda run -n app_env flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
