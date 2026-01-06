@@ -21,31 +21,27 @@ jobs:
         conda init bash
         echo "CONDA_ENVS_PATH=$CONDA/envs" >> $GITHUB_ENV
     
-    # 安装系统依赖
+    # 安装系统依赖（ffmpeg），解决媒体处理依赖问题
     - name: Install system dependencies
       run: |
         sudo apt-get update -y
         sudo apt-get install -y ffmpeg --no-install-recommends
     
-    # 创建Conda环境（无需手动激活）
+    # 创建独立Conda环境（避免污染base环境）
     - name: Create Conda environment
       run: conda create -n app_env python=3.10 -y
     
-    # 安装Python依赖（通过conda run指定环境）
+    # 安装Python依赖（通过conda run指定环境，配清华源加速）
     - name: Install Python dependencies
       run: |
         conda run -n app_env pip install --upgrade pip
         conda run -n app_env pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
     
-    # 代码检查（通过conda run指定环境）
+    # 代码检查（flake8），确保代码无语法错误
     - name: Lint with flake8
       run: |
         conda run -n app_env pip install flake8
         conda run -n app_env flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         conda run -n app_env flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
-# 注释掉以下内容
-# - name: Test with pytest
-#   run: |
-#     conda run -n app_env pip install pytest
-#     conda run -n app_env pytest -v
+
+    # 已移除pytest步骤（无测试用例时无需保留）
