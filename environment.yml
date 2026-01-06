@@ -1,0 +1,17 @@
+# environment.yml
+name: streamlit-app
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - streamlit
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - ffmpeg  # 系统依赖可以直接在 conda 中安装
+  - pip:
+    - opencv-python  # 如果需要额外的 pip 包
+    - pillow
