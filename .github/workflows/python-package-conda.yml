@@ -9,52 +9,43 @@ jobs:
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v4  # 检出代码到CI环境
+    - uses: actions/checkout@v4
     - name: Set up Python 3.10
-      uses: actions/setup-python@v5  # 升级到v5版本，兼容性更好
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     
-    # 关键修复1：正确初始化Conda环境（解决conda命令未找到的问题）
+    # 初始化Conda并配置环境变量
     - name: Initialize Conda
       run: |
         conda init bash
-        source ~/.bashrc
         echo "CONDA_ENVS_PATH=$CONDA/envs" >> $GITHUB_ENV
     
-    # 关键修复2：安装系统依赖（ffmpeg），添加-y避免交互确认
+    # 安装系统依赖
     - name: Install system dependencies
       run: |
         sudo apt-get update -y
         sudo apt-get install -y ffmpeg --no-install-recommends
     
-    # 关键修复3：创建独立Conda环境，避免污染base环境
-    - name: Create and activate Conda environment
-      run: |
-        conda create -n app_env python=3.10 -y  # 创建名为app_env的环境
-        conda activate app_env
-        echo "CONDA_DEFAULT_ENV=app_env" >> $GITHUB_ENV  # 设置默认环境
+    # 创建Conda环境（无需手动激活）
+    - name: Create Conda environment
+      run: conda create -n app_env python=3.10 -y
     
-    # 关键修复4：用pip安装requirements.txt依赖，配置清华源加速
+    # 安装Python依赖（通过conda run指定环境）
     - name: Install Python dependencies
       run: |
-        conda activate app_env
-        pip install --upgrade pip  # 升级pip
-        pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+        conda run -n app_env pip install --upgrade pip
+        conda run -n app_env pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
     
-    # 代码检查（flake8），确保在创建的环境中执行
+    # 代码检查（通过conda run指定环境）
     - name: Lint with flake8
       run: |
-        conda activate app_env
-        pip install flake8  # 用pip安装flake8，比conda更稳定
-        # 语法错误/未定义名称直接终止构建
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # 其他问题作为警告
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        conda run -n app_env pip install flake8
+        conda run -n app_env flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        conda run -n app_env flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
-    # 单元测试（pytest），同样在目标环境执行
+    # 单元测试（通过conda run指定环境）
     - name: Test with pytest
       run: |
-        conda activate app_env
-        pip install pytest  # 用pip安装pytest
-        pytest -v  # -v显示详细测试结果
+        conda run -n app_env pip install pytest
+        conda run -n app_env pytest -v
