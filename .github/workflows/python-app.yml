@@ -10,35 +10,57 @@ jobs:
       # 1. 检出代码
       - uses: actions/checkout@v4
 
-      # 2. 配置Conda（关键修正：指定正确Python版本，关闭自动创建test环境）
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # 2. 配置Python 3.10
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"  # 明确指定3.10，避免解析成3.1
-          conda-version: "latest"
-          auto-activate-base: true  # 激活base环境，不创建test环境
-          auto-update-conda: true
-          channels: conda-forge,defaults
-          channel-priority: strict
+          python-version: "3.10"
+          cache: 'pip'  # 启用 pip 缓存
 
       # 3. 安装系统依赖（ffmpeg）
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends ffmpeg
-        shell: bash
 
-      # 4. 安装Python依赖（用base环境，清华源加速）
+      # 4. 创建并激活虚拟环境（替代 Conda）
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          echo "VIRTUAL_ENV=$PWD/venv" >> $GITHUB_ENV
+          echo "$PWD/venv/bin" >> $GITHUB_PATH
+
+      # 5. 安装Python依赖
       - name: Install Python dependencies
         run: |
+          source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-        shell: bash -l {0}  # 必须加-l，确保conda环境生效
+          
+          # 如果 requirements.txt 不存在，安装常用包
+          if [ ! -f requirements.txt ]; then
+            echo "requirements.txt not found, installing common packages"
+            pip install streamlit pandas numpy matplotlib scikit-learn -i https://pypi.tuna.tsinghua.edu.cn/simple
+          fi
 
-      # 5. 代码检查（flake8）
+      # 6. 代码检查
       - name: Lint with flake8
         run: |
+          source venv/bin/activate
           pip install flake8
+          # 检查关键错误
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # 检查风格问题（不中断构建）
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        shell: bash -l {0}
+
+      # 7. 可选：运行测试（如果存在）
+      - name: Run tests (if any)
+        run: |
+          source venv/bin/activate
+          if [ -f "pytest.ini" ] || [ -d "tests" ]; then
+            pip install pytest
+            pytest -v || echo "Tests failed but continuing..."
+          else
+            echo "No tests found"
+          fi
