@@ -26,37 +26,52 @@ if nav == "首页":
 
 elif nav == "协会成员":
     file_Path = "document/协会现有成员信息表.xlsx"
-    file_data = pd.read_excel(file_Path, engine='openpyxl')
-    try:
-        # 成员数量
-        length = len(file_data.iloc[:, 6])
-        temp_length = 0
-        for i in range(length):
-            if file_data.iloc[i, 6] != 1:
-                temp_length += 1
-            else:
-                break
-        length = temp_length
-        # 主键数据唯一性标识
-        name = []
-        id = []
-        identity = []
-        for i in range(length):
-            if file_data.iloc[i, 9] == "非国际交流协会成员":
-                continue
-            else:
-                name.append(file_data.iloc[i, 6])
-                id.append(str(file_data.iloc[i, 5]))
-                identity.append(file_data.iloc[i, 9])
-        Mark = file_data.iloc[:, 6]
-        def Name():
-            return name
-        def ID():
-            return id
-        def Identity():
-            return identity
-    except:
-        print(e)
+    # 先检查文件是否存在，避免读取不存在的文件报错
+    if not os.path.exists(file_Path):
+        st.error(f"成员信息表未找到：{os.path.abspath(file_Path)}")
+    else:
+        try:
+            file_data = pd.read_excel(file_Path, engine='openpyxl')
+            # 成员数量
+            length = len(file_data.iloc[:, 6])
+            temp_length = 0
+            for i in range(length):
+                if file_data.iloc[i, 6] != 1:
+                    temp_length += 1
+                else:
+                    break
+            length = temp_length
+            # 主键数据唯一性标识
+            name = []
+            id = []
+            identity = []
+            for i in range(length):
+                if file_data.iloc[i, 9] == "非国际交流协会成员":
+                    continue
+                else:
+                    name.append(file_data.iloc[i, 6])
+                    id.append(str(file_data.iloc[i, 5]))
+                    identity.append(file_data.iloc[i, 9])
+            Mark = file_data.iloc[:, 6]
+            
+            def Name():
+                return name
+            def ID():
+                return id
+            def Identity():
+                return identity
+            
+        # 关键修复：添加as e，让e有定义；同时用st.error在页面显示错误，更友好
+        except Exception as e:
+            st.error(f"读取成员信息表出错：{str(e)}")
+            # 给变量赋默认值，避免后续调用函数时报错
+            def Name():
+                return []
+            def ID():
+                return []
+            def Identity():
+                return []
+    
     # -------------------------------------------------------------------------------------
     st.title("国际交流协会成员信息表")
     st.write("#### 国际交流协会负责人信息")
@@ -144,5 +159,3 @@ elif nav == "照片":
     st.title("照片")
 elif nav == "奖状":
     st.title("奖状")
-
-
