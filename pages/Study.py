@@ -20,6 +20,9 @@ if nav == "首页":
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
 
     st.divider()
+    vedio_path = os.path.join(r"E:\Project_Document\Python\pycharm\Application\personalwebsite\static","北大数学.mp4")
+    if os.path.exists(vedio_path):
+        st.vedio(vedio_path)
 
   
 elif nav == "论文":
