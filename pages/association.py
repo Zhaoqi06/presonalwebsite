@@ -26,7 +26,7 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    file_Path = r"..\document\协会现有成员信息表.xlsx"
+    file_Path = ..\document\协会现有成员信息表.xlsx
     file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
