@@ -20,7 +20,7 @@ if nav == "首页":
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
 
     st.divider()
-    vedio_path = os.path.join(r"E:\Project_Document\Python\pycharm\Application\personalwebsite\static","北大数学.mp4")
+    vedio_path = os.path.join("static","北大数学.mp4")
     if os.path.exists(vedio_path):
         st.vedio(vedio_path)
 
@@ -30,7 +30,9 @@ elif nav == "论文":
     with st.expander("智能流水车间调度与优化的仿真模拟——基于Python的遥控器生产线建模与优化"):
         st.subheader("第一届全国大学生仿真建模应用挑战赛")
         # 使用 pdf_viewer 替代 st.pdf()
-        pdf_path = r"D:\pycharm\Application\personalwebsite\document\ACSFJM2512633.pdf"
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        docx_file_path = os.path.join(script_dir, "..", "document", "ACSFJM2512633.pdf")
+        pdf_path = os.path.normpath(docx_file_path)
         if os.path.exists(pdf_path):
             with open(pdf_path, "rb") as f:
                 pdf_viewer(f.read(), width=700, height=600)
