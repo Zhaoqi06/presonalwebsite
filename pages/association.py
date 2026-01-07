@@ -161,7 +161,6 @@ elif nav == "活动风采":
         st.write("国际交流协会")
         st.write("2025年12月4日")
 
-
 elif nav == "活动选人":
     st.title("活动选人")
     file_path = None  # 初始化变量
@@ -198,7 +197,12 @@ elif nav == "活动选人":
                     max_count = min(len(name), 10)  # 限制最大选择数量
                     selected_count = st.number_input("随机抽选人数", 0, len(name), min(5, len(name)), step=1)
 
-                if selected_count > 0:
+                with col2:
+                    st.write("")
+                    st.write("")
+                    select_button = st.button("开始选人")  # 添加选人按钮
+
+                if select_button and selected_count > 0:
                     selected_names = np.random.choice(name, size=selected_count, replace=False)
 
                     # 显示随机选中的人员
@@ -208,8 +212,8 @@ elif nav == "活动选人":
 
                     # 1. 静态表格
                     st.table(selected_df)
-                else:
-                    st.info("请选择要抽取的人数")
+                elif select_button and selected_count <= 0:
+                    st.warning("请选择要抽取的人数")
 
     except ValueError as ve:
         if "Cannot take a larger sample than population" in str(ve):
@@ -222,3 +226,4 @@ elif nav == "活动选人":
         # 清理临时文件
         if file_path and os.path.exists(file_path):
             os.remove(file_path)
+
