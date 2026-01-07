@@ -1,7 +1,8 @@
 import streamlit as st
-from streamlit_pdf_viewer import pdf_viewer
+from datetime import datetime
 import pandas as pd
 import os
+import numpy as np
 st.set_page_config(page_title="协会", layout="wide")
 
 # 拦截未登录用户
@@ -10,14 +11,14 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.switch_page("pages/login.py")
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动风采","照片", "奖状"])
+nav = st.sidebar.selectbox("导航栏", ["首页","协会成员", "活动报名","活动风采","活动选人"])
 
 if nav == "首页":
     st.title("国际交流协会")
     st.write(
         "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
     st.divider()
-    video_path = "vedio/一带一路英文_20251219_09504850.mp4"
+    video_path = r"E:\Project_Document\Python\pycharm\Application\personalwebsite\vedio\一带一路英文.mp4"
     if os.path.exists(video_path):
         st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
     else:
@@ -25,53 +26,46 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    file_Path = "document/协会现有成员信息表.xlsx"
-    # 先检查文件是否存在，避免读取不存在的文件报错
-    if not os.path.exists(file_Path):
-        st.error(f"成员信息表未找到：{os.path.abspath(file_Path)}")
-    else:
-        try:
-            file_data = pd.read_excel(file_Path, engine='openpyxl')
-            # 成员数量
-            length = len(file_data.iloc[:, 6])
-            temp_length = 0
-            for i in range(length):
-                if file_data.iloc[i, 6] != 1:
-                    temp_length += 1
-                else:
-                    break
-            length = temp_length
-            # 主键数据唯一性标识
-            name = []
-            id = []
-            identity = []
-            for i in range(length):
-                if file_data.iloc[i, 9] == "非国际交流协会成员":
-                    continue
-                else:
-                    name.append(file_data.iloc[i, 6])
-                    id.append(str(file_data.iloc[i, 5]))
-                    identity.append(file_data.iloc[i, 9])
-            Mark = file_data.iloc[:, 6]
-            
-            def Name():
-                return name
-            def ID():
-                return id
-            def Identity():
-                return identity
-            
-        # 关键修复：添加as e，让e有定义；同时用st.error在页面显示错误，更友好
-        except Exception as e:
-            st.error(f"读取成员信息表出错：{str(e)}")
-            # 给变量赋默认值，避免后续调用函数时报错
-            def Name():
-                return []
-            def ID():
-                return []
-            def Identity():
-                return []
-    
+    file_Path = r"E:\Project_Document\Python\pycharm\Application\personalwebsite\document\协会现有成员信息表.xlsx"
+    file_data = pd.read_excel(file_Path, engine='openpyxl')
+    try:
+        # 成员数量
+        length = len(file_data.iloc[:, 6])
+        temp_length = 0
+        for i in range(length):
+            if file_data.iloc[i, 6] != 1:
+                temp_length += 1
+            else:
+                break
+        length = temp_length
+        # 主键数据唯一性标识
+        name = []
+        id = []
+        identity = []
+        menmber = []
+        for i in range(length):
+            if file_data.iloc[i, 9] == "非国际交流协会成员":
+                continue
+            else:
+                name.append(file_data.iloc[i, 6])
+                id.append(str(file_data.iloc[i, 5]))
+                identity.append(file_data.iloc[i, 9])
+
+        Mark = file_data.iloc[:, 6]
+
+
+        def Name():
+            return name
+
+
+        def ID():
+            return id
+
+
+        def Identity():
+            return identity
+    except:
+        print(e)
     # -------------------------------------------------------------------------------------
     st.title("国际交流协会成员信息表")
     st.write("#### 国际交流协会负责人信息")
@@ -93,7 +87,8 @@ elif nav == "协会成员":
     st.divider()
     st.write("#### 内部成员信息核对")
 
-
+elif nav == "活动报名":
+    pass
 elif nav == "活动风采":
     st.title("协会活动")
     st.write("新任主席上任以来所接手的所有活动")
@@ -106,7 +101,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            "image/迎新.jpeg",
+            r"E:\Project_Document\Python\pycharm\Application\personalwebsite\image\迎新.jpeg",
             caption='迎新活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -126,7 +121,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            "image/破冰.jpg",
+            r"E:\Project_Document\Python\pycharm\Application\personalwebsite\image\破冰.jpg",
             caption='破冰活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -147,7 +142,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            "image/剪纸.jpeg",
+            r"E:\Project_Document\Python\pycharm\Application\personalwebsite\image\剪纸.jpeg",
             caption='非遗剪纸交流活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -155,7 +150,63 @@ elif nav == "活动风采":
         st.write("2025年12月4日")
 
 
-elif nav == "照片":
-    st.title("照片")
-elif nav == "奖状":
-    st.title("奖状")
+elif nav == "活动选人":
+    st.title("活动选人")
+    file_path = None  # 初始化变量
+    try:
+        uploaded_file = st.file_uploader("请上传活动报名表", type=['xlsx'])
+
+        if uploaded_file is not None:
+            # 保存上传的文件
+            file_path = f"temp_excel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+
+            st.divider()
+            st.write("本次参加活动人员名单！")
+            # 显示原始Excel数据
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+            st.dataframe(df, use_container_width=True)
+            st.divider()
+
+            st.write("随机选人")
+            # 获取报名人员姓名列表
+            name = []
+            length = len(df.iloc[:, 2])
+            for i in range(2, length):
+                name.append(df.iloc[i, 2])
+
+            # 验证是否有有效数据
+            if len(name) == 0:
+                st.warning("没有找到有效的报名人员数据")
+            else:
+                # 从报名人员中随机选择
+                col1, col2 = st.columns(2)
+                with col1:
+                    max_count = min(len(name), 10)  # 限制最大选择数量
+                    selected_count = st.number_input("随机抽选人数", 0, len(name), min(5, len(name)), step=1)
+
+                if selected_count > 0:
+                    selected_names = np.random.choice(name, size=selected_count, replace=False)
+
+                    # 显示随机选中的人员
+                    selected_df = pd.DataFrame({
+                        '选中人员': selected_names
+                    })
+
+                    # 1. 静态表格
+                    st.table(selected_df)
+                else:
+                    st.info("请选择要抽取的人数")
+
+    except ValueError as ve:
+        if "Cannot take a larger sample than population" in str(ve):
+            st.error(f"选择人数不能超过可用人员数量")
+        else:
+            st.error(f"数值错误：{str(ve)}")
+    except Exception as e:
+        st.error(f"处理失败：{str(e)}")
+    finally:
+        # 清理临时文件
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
