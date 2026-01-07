@@ -18,7 +18,7 @@ if nav == "首页":
     st.write(
         "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
     st.divider()
-    video_path = r"..\vedio\一带一路英文_20251219_09504850.mp4"
+    video_path = r"../vedio/一带一路英文_20251219_09504850.mp4"
     if os.path.exists(video_path):
         st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
     else:
@@ -26,7 +26,7 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    file_Path = ..\document\协会现有成员信息表.xlsx
+    file_Path = "../document/协会现有成员信息表.xlsx"
     file_data = pd.read_excel(file_Path, engine='openpyxl')
     try:
         # 成员数量
