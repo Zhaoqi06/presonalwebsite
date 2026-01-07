@@ -19,7 +19,7 @@ if nav == "首页":
         "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
     st.divider()
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    docx_file_path = os.path.join(script_dir, "..", "document", "一带一路英文_20251219_09504850.mp4")
+    docx_file_path = os.path.join(script_dir, "..", "vedio", "一带一路英文_20251219_09504850.mp4")
     video_path = os.path.normpath(docx_file_path)
     if os.path.exists(video_path):
         st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
