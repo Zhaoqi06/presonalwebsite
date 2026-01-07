@@ -106,7 +106,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r"..\image\迎新.jpeg",
+            "../../image/迎新.jpeg",
             caption='迎新活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
