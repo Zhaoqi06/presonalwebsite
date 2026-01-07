@@ -19,7 +19,7 @@ if nav == "首页":
         "四川信息职业技术学院国际交流协会，宛如一座璀璨的文化桥梁，搭建起学院与国际的沟通之路。协会成立于2014，自诞生起，就以跨越信息边界，共筑国际交流为宗旨，积极推动学院在国际舞台上绽放光彩。")
     st.divider()
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    docx_file_path = os.path.join(script_dir, "..", "document", "一带一路英文_20251219_09504850.mp4")
+    docx_file_path = os.path.join(script_dir, "..", "document", "一带一路英文.mp4")
     video_path = os.path.normpath(docx_file_path)
     if os.path.exists(video_path):
         st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
@@ -28,7 +28,6 @@ if nav == "首页":
 
 
 elif nav == "协会成员":
-    
     script_dir = os.path.dirname(os.path.abspath(__file__))
     docx_file_path = os.path.join(script_dir, "..", "document", "协会现有成员信息表.xlsx")
     file_Path = os.path.normpath(docx_file_path)
@@ -104,9 +103,17 @@ elif nav == "活动风采":
         "&emsp;&emsp;2025年10月10日在31名四川信息职业技术学院雪峰校区开展迎新活动，在全体师生的共同努力下圆满结束,不仅为新生们营造了一个温馨、热情的入学氛围,也展现了学校的凝聚力和向心力。活动前期,我们进行了周密的筹备工作,包括场地布置、物资准备、人员分工等,确保每一个细节都能体现对新生的关怀。&emsp;&emsp;<br>&emsp;&emsp;活动中,志愿者们积极投入,耐心解答新生疑问,引导他们完成报到手续,并详细介绍校园环境和生活设施。迎新活动圆满落幕,我们见证了新成员们从陌生到熟悉的转变过程。活动中,我们注重互动与交流,通过才艺展示、互动问答等环节,让新成员们充分展示自我,增进彼此的了解。同时,我们也为新成员们准备了丰富的迎新礼包和贴心的生活指南,帮助他们更快地适应新环境。此次迎新活动不仅让新成员们感受到了学校的温暖与关怀,也激发了他们对未来学习生活的热情与憧憬。例如,部分环节衔接不够流畅,部分志愿者对新生报到流程不够熟悉,导致出现了一些小混乱。未来,我们将总结经验教训,进一步优化迎新流程,提高活动效率和质量。",
         unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 6, 1])
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    image_file_path_1 = os.path.join(script_dir, "..", "image", "迎新.jpeg")
+    image_file_path_2 = os.path.join(script_dir, "..", "image", "破冰.jpg")
+    image_file_path_3 = os.path.join(script_dir, "..", "image", "剪纸.jpeg")
+
+    image_file_path_1 = os.path.normpath(image_file_path_1)
+    image_file_path_2 = os.path.normpath(image_file_path_2)
+    image_file_path_3 = os.path.normpath(image_file_path_3)
     with col2:
         st.image(
-            "../image/迎新.jpeg",
+            image_file_path_1,
             caption='迎新活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -126,7 +133,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r"E:\Project_Document\Python\pycharm\Application\personalwebsite\image\破冰.jpg",
+            image_file_path_2,
             caption='破冰活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
@@ -147,7 +154,7 @@ elif nav == "活动风采":
     col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
         st.image(
-            r"E:\Project_Document\Python\pycharm\Application\personalwebsite\image\剪纸.jpeg",
+            image_file_path_3,
             caption='非遗剪纸交流活动照片')
     col_left, col_right = st.columns([7, 3])
     with col_right:
