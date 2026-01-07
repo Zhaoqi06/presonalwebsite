@@ -3,17 +3,13 @@ import os
 from datetime import datetime
 import ffmpeg
 import subprocess
-
-# 拦截未登录用户
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
     st.switch_page("pages/login.py")
 
 
 def mp4_to_gif_high_quality(input_file, output_file, start_time=0, duration=None, fps=15, scale_width=480):
-    """
-    使用双通道优化提高GIF质量
-    """
+
     try:
         # 创建调色板
         palette_stream = ffmpeg.input(input_file, ss=start_time)
