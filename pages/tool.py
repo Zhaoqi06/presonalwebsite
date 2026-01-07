@@ -56,9 +56,10 @@ def mp4_to_gif_high_quality(input_file, output_file, start_time=0, duration=None
         st.error(f"转换失败: {e}")
         return False
 
+
 def adjust_video_speed_improved(input_file, output_file, speed_factor=1.0):
     """
-    改进版视频速度调整函数，包含更好的错误诊断
+    改进版视频速度调整函数，解决音视频同步问题
     """
     try:
         # 首先尝试使用 ffprobe 命令行工具诊断文件
@@ -94,13 +95,25 @@ def adjust_video_speed_improved(input_file, output_file, speed_factor=1.0):
                 acodec='copy'
             )
         else:
-            # 速度调整处理
+            # 处理视频流
             video_stream = input_stream.video.filter('setpts', f'{1 / speed_factor}*PTS')
 
             # 检查是否有音频流
             audio_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'audio']
+
             if audio_streams and input_stream.audio is not None:
-                audio_stream = input_stream.audio.filter('atempo', min(speed_factor, 2.0))
+                # 音频速度调整，支持大于2倍的速度
+                audio_stream = input_stream.audio
+                remaining_speed = speed_factor
+
+                # atempo滤镜限制在0.5-2.0之间，需要分段处理
+                while remaining_speed > 2.0:
+                    audio_stream = audio_stream.filter('atempo', 2.0)
+                    remaining_speed /= 2.0
+
+                if remaining_speed >= 0.5:
+                    audio_stream = audio_stream.filter('atempo', remaining_speed)
+
                 output_stream = ffmpeg.output(video_stream, audio_stream, output_file)
             else:
                 # 无音频或音频流不可用
@@ -119,6 +132,7 @@ def adjust_video_speed_improved(input_file, output_file, speed_factor=1.0):
     except Exception as e:
         print(f"❌ 处理失败: {e}")
         return False
+
 
 # 使用 selectbox 实现导航
 nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速"])
@@ -210,6 +224,17 @@ elif nav == "视频调速":
         # 显示原始视频
         st.video(uploaded_file)
 
+        # 显示视频信息
+        try:
+            probe = ffmpeg.probe(video_path)
+            video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+            if video_streams:
+                video_info = video_streams[0]
+                duration = float(probe['format']['duration'])
+                st.info(f"视频时长: {duration:.2f}秒 | 分辨率: {video_info['width']}x{video_info['height']} | 格式: {video_info['codec_name']}")
+        except:
+            pass
+
         speed_factor = st.slider("播放速度", 0.1, 5.0, 1.0, 0.1)
 
         if st.button("调整速度"):
@@ -218,12 +243,12 @@ elif nav == "视频调速":
                     # 生成新文件名
                     output_filename = f"speed_adjusted_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
 
-                    # 使用新的视频调速函数
+                    # 使用优化后的视频调速函数
                     success = adjust_video_speed_improved(video_path, output_filename, speed_factor)
 
                     if success:
                         # 显示结果
-                        st.success("处理成功！")
+                        st.success(f"处理成功！速度调整为 {speed_factor}x")
                         st.video(output_filename)
 
                         # 提供下载
@@ -245,4 +270,3 @@ elif nav == "视频调速":
                         os.remove(video_path)
                     if os.path.exists(output_filename):
                         os.remove(output_filename)
-
