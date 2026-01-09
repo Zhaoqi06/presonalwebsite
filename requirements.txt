@@ -1,10 +1,10 @@
-# refresh 20260107
+# refresh 20260107（适配 Streamlit Cloud 版本）
 streamlit==1.32.2
 streamlit-pdf-viewer>=0.0.26
 openpyxl>=3.1.2
 python-docx>=0.8.11
 ffmpeg-python>=0.2.0
-python-snap7>=1.5.0
-sounddevice>=0.4.6
-vosk>=0.3.45
+python-snap7==1.4.1  # 降级：1.5.0 对 3.11 兼容差，1.4.1 适配 3.9
+sounddevice==0.4.5   # 降级：0.4.6 在 Cloud 编译失败，0.4.5 更稳定
+vosk==0.3.40         # 降级：0.3.40 是 Linux 兼容最好的版本
 requests==2.31.0
