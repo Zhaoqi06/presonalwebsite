@@ -8,3 +8,7 @@ python-snap7>=1.5.0
 sounddevice>=0.4.6
 vosk>=0.3.45
 requests==2.31.0
+# packages.txt - 安装sounddevice依赖的系统库
+portaudio19-dev
+# 可选：补充snap7的系统依赖（如果用到）
+libsnap7-dev
