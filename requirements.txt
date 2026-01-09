@@ -1,5 +1,5 @@
 # refresh 20260107
-streamlit==1.32.2
+streamlit==1.20.2
 streamlit-pdf-viewer>=0.0.26
 openpyxl>=3.1.2
 python-docx>=0.8.11
