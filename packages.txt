@@ -1,5 +1,9 @@
-ffmpeg
-# sounddevice 依赖的系统音频库
+# Streamlit Cloud 系统级依赖
+# sounddevice 依赖
 portaudio19-dev
-# snap7 依赖的系统通信库
+libasound2-dev
+# snap7 依赖
 libsnap7-dev
+snap7
+# ffmpeg-python 依赖
+ffmpeg
