@@ -1,1 +1,5 @@
 ffmpeg
+# sounddevice 依赖的系统音频库
+portaudio19-dev
+# snap7 依赖的系统通信库
+libsnap7-dev
