@@ -1,6 +1,1 @@
-
-portaudio19-dev
-libasound2-dev
-libsnap7-dev
-snap7
 ffmpeg
