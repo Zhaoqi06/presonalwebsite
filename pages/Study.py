@@ -20,9 +20,13 @@ if nav == "首页":
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
 
     st.divider()
-    vedio_path = os.path.join("static","北大数学.mp4")
-    if os.path.exists(vedio_path):
-        st.vedio(vedio_path)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    docx_file_path = os.path.join(script_dir, "..", "vedio", "北大数学.mp4")
+    video_path = os.path.normpath(docx_file_path)
+    if os.path.exists(video_path):
+        st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
+    else:
+        st.error(f"视频文件未找到：{os.path.abspath(video_path)}")
 
   
 elif nav == "论文":
