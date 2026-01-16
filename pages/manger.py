@@ -1,9 +1,7 @@
 import streamlit as st
 import os
 # 关键修改1：显式导入datetime和date，避免层级引用异常
-from datetime import datetime, date
-from docx import Document
-from docx.shared import Pt
+from datetime import datetime
 import sqlite3
 
 # ==================== 全局前置校验 ====================
