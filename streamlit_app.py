@@ -7,7 +7,7 @@ import sqlite3
 def get_db_connection():
     """提取公共连接函数，确保data文件夹存在"""
     # 先创建data文件夹（避免路径不存在）
-    data_dir = "data"
+    data_dir = "../data"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
