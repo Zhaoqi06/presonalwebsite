@@ -19,7 +19,7 @@ st.markdown("""
 # ==================== 数据库核心函数 ====================
 def init_data_folder():
     """自动创建data文件夹，避免路径不存在"""
-    data_dir = "../data"
+    data_dir = "data"
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
         st.success("自动创建data文件夹成功")
@@ -28,7 +28,7 @@ def get_db_connection():
     """提取公共连接函数，增加路径初始化"""
     init_data_folder()
     try:
-        db_path = os.path.join("../data", "notification.db")
+        db_path = os.path.join("data", "notification.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
