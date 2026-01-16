@@ -43,27 +43,28 @@ elif nav == "论文":
         else:
             st.error(f"PDF文件未找到：{pdf_path}")
 
-        with st.expander("基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究"):
-            st.subheader("2025 年第十五届APMCM 亚太地区大学生数学建模竞赛（中文赛项）")
-            # 使用 pdf_viewer 替代 st.pdf()
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            docx_file_path = os.path.join(script_dir, "..", "document", "基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究.pdf")
-            pdf_path = os.path.normpath(docx_file_path)
-            if os.path.exists(pdf_path):
-                with open(pdf_path, "rb") as f:
-                    pdf_viewer(f.read(), width=700, height=600)
-            else:
-                st.error(f"PDF文件未找到：{pdf_path}")
+    with st.expander("基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究"):
+        st.subheader("2025 年第十五届APMCM 亚太地区大学生数学建模竞赛（中文赛项）")
+        # 使用 pdf_viewer 替代 st.pdf()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        docx_file_path = os.path.join(script_dir, "..", "document",
+                                      "基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究.pdf")
+        pdf_path = os.path.normpath(docx_file_path)
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                pdf_viewer(f.read(), width=700, height=600)
+        else:
+            st.error(f"PDF文件未找到：{pdf_path}")
 
-            with st.expander("基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究"):
-                st.subheader("2025 年第七届中青杯全国大学生数学解模竞赛")
-                # 使用 pdf_viewer 替代 st.pdf()
-                script_dir = os.path.dirname(os.path.abspath(__file__))
-                docx_file_path = os.path.join(script_dir, "..", "document",
-                                              "B202501829.pdf")
-                pdf_path = os.path.normpath(docx_file_path)
-                if os.path.exists(pdf_path):
-                    with open(pdf_path, "rb") as f:
-                        pdf_viewer(f.read(), width=700, height=600)
-                else:
-                    st.error(f"PDF文件未找到：{pdf_path}")
+    with st.expander("基于大数据分析的三种重大慢性病的相关风险评估与防控策略研究"):
+        st.subheader("2025 年第七届中青杯全国大学生数学解模竞赛")
+        # 使用 pdf_viewer 替代 st.pdf()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        docx_file_path = os.path.join(script_dir, "..", "document",
+                                      "B202501829.pdf")
+        pdf_path = os.path.normpath(docx_file_path)
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                pdf_viewer(f.read(), width=700, height=600)
+        else:
+            st.error(f"PDF文件未找到：{pdf_path}")
