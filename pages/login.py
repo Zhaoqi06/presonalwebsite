@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import traceback  # 用于详细的异常信息
+import traceback
 
 # 设置页面配置（必须放在最前面）
 st.set_page_config(page_title="登录", page_icon=":lock:", layout="centered")
