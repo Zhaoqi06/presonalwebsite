@@ -29,6 +29,6 @@ def execute_sql_script(db_path, sql_script_path):
 # 调用函数（请根据你的文件路径调整）
 if __name__ == "__main__":
     execute_sql_script(
-        db_path="../data/notification.db",  # 你的db文件路径
-        sql_script_path="../sql_scripts/notification.sql"  # 你的sql文件路径
+        db_path="../data/count_password.db",  # 你的db文件路径
+        sql_script_path="../sql_scripts/count_password.sql"  # 你的sql文件路径
     )

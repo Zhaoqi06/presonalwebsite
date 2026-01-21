@@ -1,7 +1,5 @@
 import streamlit as st
-import pandas as pd
-import traceback
-
+import function as f
 # 设置页面配置（必须放在最前面）
 st.set_page_config(page_title="登录", page_icon=":lock:", layout="centered")
 
@@ -22,56 +20,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 读取Excel文件并处理用户数据
-def load_user_data():
-    """加载用户数据并返回用户名-密码映射（这里假设ID列为密码）"""
-    user_data = {
-        "name": [],
-        "id": [],
-        "identity": [],
-        "valid_map": {}  # 用户名: 密码（ID）映射
-    }
-    file_path = "document/协会现有成员信息表.xlsx"
-    
-    try:
-        # 读取Excel文件
-        file_data = pd.read_excel(file_path, engine='openpyxl')
-        
-        # 确定有效数据长度（直到第7列值为1时停止）
-        length = len(file_data.iloc[:, 6]) if len(file_data) > 0 else 0
-        temp_length = 0
-        
-        for i in range(length):
-            # 处理空值，确保比较安全
-            cell_value = file_data.iloc[i, 6]
-            if pd.isna(cell_value) or cell_value != 1:
-                temp_length += 1
-            else:
-                break
-        
-        # 提取用户信息
-        for i in range(temp_length):
-            # 提取姓名（第7列）
-            name = file_data.iloc[i, 6] if not pd.isna(file_data.iloc[i, 6]) else ""
-            # 提取ID/密码（第6列）
-            user_id = str(file_data.iloc[i, 5]) if not pd.isna(file_data.iloc[i, 5]) else ""
-            # 提取身份（第10列）
-            identity = file_data.iloc[i, 9] if not pd.isna(file_data.iloc[i, 9]) else ""
-            
-            if name and user_id:  # 只保留有效数据
-                user_data["name"].append(name)
-                user_data["id"].append(user_id)
-                user_data["identity"].append(identity)
-                user_data["valid_map"][name] = user_id  # 建立用户名-密码映射
-    
-    except Exception as e:
-        st.error(f"读取用户数据失败：{str(e)}")
-        st.error(f"详细错误信息：{traceback.format_exc()}")
-    
-    return user_data
-
-# 加载用户数据
-user_data = load_user_data()
+f.init_count_password_table()
+information = f.read_count_password()
+user_data = {"valid_map": {}}
+for info in information:
+    username = info["username"]
+    password = info["password"]
+    user_data = {"valid_map": {username: password}}
 
 # 登录表单
 st.title("登录系统")

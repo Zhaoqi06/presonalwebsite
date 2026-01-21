@@ -68,7 +68,7 @@ elif nav == "协会成员":
 
         def Identity():
             return identity
-    except:
+    except Exception as e:
         print(e)
     # -------------------------------------------------------------------------------------
     st.title("国际交流协会成员信息表")
@@ -194,23 +194,21 @@ elif nav == "活动选人":
                 # 从报名人员中随机选择
                 col1, col2 = st.columns(2)
                 with col1:
-                    max_count = min(len(name), 10)  # 限制最大选择数量
+                    max_count = min(len(name), 10)
                     selected_count = st.number_input("随机抽选人数", 0, len(name), min(5, len(name)), step=1)
 
                 with col2:
                     st.write("")
                     st.write("")
-                    select_button = st.button("开始选人")  # 添加选人按钮
+                    select_button = st.button("开始选人")
 
                 if select_button and selected_count > 0:
                     selected_names = np.random.choice(name, size=selected_count, replace=False)
 
-                    # 显示随机选中的人员
                     selected_df = pd.DataFrame({
                         '选中人员': selected_names
                     })
 
-                    # 1. 静态表格
                     st.table(selected_df)
                 elif select_button and selected_count <= 0:
                     st.warning("请选择要抽取的人数")

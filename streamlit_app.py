@@ -1,86 +1,5 @@
 import streamlit as st
-import os
-import sqlite3
-
-
-# ==================== 数据库核心函数 ====================
-def get_db_connection():
-
-    try:
-        # 拼接绝对路径，避免相对路径歧义
-        db_path = os.path.join("data", "notification.db")
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row  # 支持按字段名取值
-        return conn
-    except sqlite3.Error as e:
-        st.error(f"数据库连接失败：{e}")  # Streamlit页面显示错误，而非print
-        return None
-
-
-def init_notification_table():
-    """初始化通知表（确保表存在且字段完整）"""
-    conn = get_db_connection()
-    if not conn:
-        return
-    try:
-        cursor = conn.cursor()
-        # 创建表（含id/title/text/time字段）
-        cursor.execute("""
-                       CREATE TABLE IF NOT EXISTS notifications
-                       (
-                           id
-                           INTEGER
-                           PRIMARY
-                           KEY
-                           AUTOINCREMENT,
-                           title
-                           TEXT
-                           NOT
-                           NULL,
-                           text
-                           TEXT
-                           NOT
-                           NULL,
-                           time
-                           TEXT
-                           NOT
-                           NULL
-                       )
-                       """)
-        conn.commit()
-    except sqlite3.Error as e:
-        st.error(f"初始化通知表出错：{e}")
-    finally:
-        conn.close()
-
-
-def read_notifications():
-    """读取通知数据，返回结构化列表（避免全局变量）"""
-    notifications = []  # 用列表存储字典，更易读
-    conn = get_db_connection()
-    if not conn:
-        return notifications
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, title, text, time FROM notifications ORDER BY id DESC")  # 按ID倒序（最新的在前）
-        rows = cursor.fetchall()
-
-        # 按字段名取值，而非索引，更健壮
-        for row in rows:
-            notifications.append({
-                "id": row["id"],
-                "title": row["title"],
-                "text": row["text"],
-                "time": row["time"]
-            })
-    except sqlite3.Error as e:
-        st.error(f"读取通知数据出错：{e}")
-    finally:
-        conn.close()
-
-    return notifications
-
+import function as f
 
 # ==================== Streamlit页面逻辑 ====================
 # 页面基础配置
@@ -92,7 +11,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.switch_page("pages/login.py")
 
 # 初始化通知表（确保表存在）
-init_notification_table()
+f.init_notification_table()
 
 # 页面内容
 st.title(f"欢迎回来! {st.session_state['username']}")
@@ -117,7 +36,7 @@ with col4:
         st.switch_page("pages/Study.py")
 with col5:
     if st.button("个人"):
-        st.switch_page("pages/association.py")
+        st.switch_page("pages/self_person.py")
 with col6:
     if st.button("退出登录"):
         st.session_state.clear()
@@ -126,7 +45,7 @@ with col6:
 # 读取并显示通知
 st.divider()
 st.subheader("最新通知")
-notifications = read_notifications()
+notifications = f.read_notifications()
 
 # 处理通知显示逻辑（修复缩进错误）
 if not notifications:
