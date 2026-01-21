@@ -5,15 +5,10 @@ import sqlite3
 
 # ==================== 数据库核心函数 ====================
 def get_db_connection():
-    """提取公共连接函数，确保data文件夹存在"""
-    # 先创建data文件夹（避免路径不存在）
-    data_dir = "data"
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
 
     try:
         # 拼接绝对路径，避免相对路径歧义
-        db_path = os.path.join(data_dir, "notification.db")
+        db_path = os.path.join("data", "notification.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row  # 支持按字段名取值
         return conn
