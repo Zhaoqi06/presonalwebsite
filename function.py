@@ -37,7 +37,6 @@ def write_count_password(username, password):
         cursor = conn.cursor()
         cursor.execute("INSERT INTO information (username, password) VALUES (?, ?)", (username, password))
         conn.commit()
-        st.success(f"用户信息写入成功！")
     except sqlite3.Error as e:
         st.error(f"写入用户信息出错：{e}")
 
@@ -50,7 +49,6 @@ def Updata_count_password(username, password):
         cursor = conn.cursor()
         cursor.execute("UPDATE information SET password=? WHERE username=?", (password, username))
         conn.commit()
-        st.success(f"用户信息更新成功！")
     except sqlite3.Error as e:
         st.error(f"更新用户信息出错：{e}")
     finally:
@@ -76,7 +74,19 @@ def init_count_password_table():
         st.error(f"初始化用户信息表出错：{e}")
     finally:
         conn.close()
-
+def delete_count_password(username):
+    """删除用户信息"""
+    conn = get_db_connection_count_password()
+    if not conn:
+        return
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM information WHERE username=?", (username,))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"删除用户信息出错：{e}")
+    finally:
+        conn.close()
 #================管理信息函数============================
 
 def get_db_connection_notification():

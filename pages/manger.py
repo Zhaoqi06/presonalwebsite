@@ -97,10 +97,18 @@ if ADMIN_USER == st.session_state["username"]:
             user_data = {"valid_map": {username: password}}
         username = st.text_input("请输入用户名：")
         password = st.text_input("请输入密码：", type="password")
-        if st.button("添加"):
-            f.write_count_password(username, password)
-            st.write("添加成功！")
-
+        col1, col2 ,col3= st.columns([1, 1,8])
+        with col1:
+            if st.button("添加"):
+                if username in user_data["valid_map"]:
+                    st.error("用户名已存在！")
+                else:
+                    f.write_count_password(username, password)
+                st.success("添加成功！")
+        with col2:
+            if st.button("删除"):
+                f.delete_count_password(username)
+                st.success("删除成功！")
 
 else:
     st.error("非管理员人员不能进入该页面")
