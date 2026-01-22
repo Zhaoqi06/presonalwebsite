@@ -7,7 +7,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 st.title("个人中心")
 st.divider()
-
+f.init_count_password_table()
 nav = st.sidebar.selectbox("导航栏", ["首页"])
 
 if nav == "首页":
