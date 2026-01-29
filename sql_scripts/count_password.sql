@@ -55,3 +55,13 @@ VALUES
 
 -- -- 查询所有正常状态的账号
 -- SELECT id, username, email, last_login_time FROM user_accounts WHERE status = 1;
+
+--===============================================================================================
+-- 1. 创建邀请码表（核心表）
+-- 作用：存储用户账号的核心信息，包含必要字段和约束，保障账号唯一性和数据完整性
+CREATE TABLE IF NOT EXISTS invite_number (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL UNIQUE,
+    invite_num INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

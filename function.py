@@ -1,12 +1,100 @@
 import os
 import sqlite3
 import streamlit as st
+from datetime import datetime
+import random
+
+#=======================邀请码==============
+import random
+from datetime import datetime
+import sqlite3
+
+#===================邀请码=====================
+def init_invite_table():
+    """初始化邀请码表"""
+    conn = get_db_connection_count_password()
+    if not conn:
+        return
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+                       CREATE TABLE IF NOT EXISTS invite_number
+                       (
+                           id
+                           INTEGER
+                           PRIMARY
+                           KEY
+                           AUTOINCREMENT,
+                           date
+                           TEXT
+                           NOT
+                           NULL
+                           UNIQUE,
+                           invite_num
+                           INTEGER
+                           NOT
+                           NULL,
+                           created_at
+                           TIMESTAMP
+                           DEFAULT
+                           CURRENT_TIMESTAMP
+                       )
+                       ''')
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"初始化用户信息表出错：{e}")
+    finally:
+        conn.close()
+
+
+def get_daily_invite_num():
+    """获取当日邀请码，基于数据库存储"""
+    # 初始化表
+    init_invite_table()
+    # 获取今日日期
+    today = datetime.now().date().strftime("%Y-%m-%d")
+
+    # 查询数据库
+    conn = sqlite3.connect('count_password.db')
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT invite_num FROM invite_number WHERE date = ?", (today,))
+    result = cursor.fetchone()
+
+    if result:
+        # 今日邀请码已存在
+        invite_num = result[0]
+        conn.close()
+        return invite_num
+    else:
+        # 生成新的邀请码
+        new_invite_num = random.randint(10000000, 99999999)
+
+        # 插入数据库
+        cursor.execute("INSERT INTO invite_number (date, invite_num) VALUES (?, ?)", (today, new_invite_num))
+        conn.commit()
+        conn.close()
+
+        return new_invite_num
+
+def read_invite_number():
+    conn = get_db_connection_count_password()
+    if not conn:
+        return []
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM invite_number")
+        rows = cursor.fetchall()
+        information = [{"id": row["id"], "date": row["date"], "invite_num": row["invite_num"]} for row in rows]
+        return information
+    except sqlite3.Error as e:
+        st.error(f"读取邀请码出错：{e}")
 #=================管理账号密码数据库===================
 
 def get_db_connection_count_password():
     """提取公共连接函数，增加路径初始化"""
     try:
-        db_path = os.path.join("./data", "count_password.db")
+        db_path = os.path.join("data", "count_password.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
@@ -87,6 +175,7 @@ def delete_count_password(username):
         st.error(f"删除用户信息出错：{e}")
     finally:
         conn.close()
+
 #================管理信息函数============================
 
 def get_db_connection_notification():

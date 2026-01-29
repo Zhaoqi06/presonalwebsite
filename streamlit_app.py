@@ -27,7 +27,7 @@ with col1:
         st.switch_page("pages/association.py")
 with col2:
     if st.button("创新创业俱乐部"):
-        st.switch_page("pages/association.py")
+        st.switch_page("pages/InovationClub.py")
 with col3:
     if st.button("实用工具"):
         st.switch_page("pages/tool.py")

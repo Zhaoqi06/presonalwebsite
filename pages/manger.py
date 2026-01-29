@@ -23,7 +23,7 @@ ADMIN_USER = "刘钊齐"
 if ADMIN_USER == st.session_state["username"]:
     st.title("欢迎进入管理页面")
     st.divider()
-    nav = st.sidebar.selectbox("导航栏", ["分布通知", "查看用户及密码","增删成员"])
+    nav = st.sidebar.selectbox("导航栏", ["分布通知", "查看用户及密码","增删成员","查看邀请码"])
 
     if nav == "分布通知":
         # 发布通知模块
@@ -91,6 +91,8 @@ if ADMIN_USER == st.session_state["username"]:
         st.header("增删成员")
         f.init_count_password_table()
         information = f.read_count_password()
+        invite_number = f.get_daily_invite_num()
+
         for info in information:
             username = info["username"]
             password = info["password"]
@@ -109,6 +111,9 @@ if ADMIN_USER == st.session_state["username"]:
             if st.button("删除"):
                 f.delete_count_password(username)
                 st.success("删除成功！")
+    if nav == "查看邀请码":
+        st.header("查看邀请码")
+        st.success(f.get_daily_invite_num())
 
 else:
     st.error("非管理员人员不能进入该页面")

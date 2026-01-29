@@ -11,9 +11,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 # 使用 selectbox 实现导航
 nav = st.sidebar.selectbox("导航栏",
-                           ["首页", "任务查看", "提交入口", "高等数学", "线性代数", "英语四级", "英语六级", "雅思",
-                            "TED", "专四", "专升本", "计算机", "Python", "C语言", "MATLAB", "STM32", "51单片机",
-                            "MYSQL", "数学竞赛", "英语竞赛", "论文"])
+                           ["首页", "Mathmatics",  "Collage of English","Article"])
 if nav == "首页":
     # st.markdown("<style>.stApp{background:linear-gradient(123deg,#F1FAEE 0%,#A8DADC 100%);}</style>",unsafe_allow_html=True)
     st.title("欢迎来到学习板块！")
@@ -28,8 +26,12 @@ if nav == "首页":
     else:
         st.error(f"视频文件未找到：{os.path.abspath(video_path)}")
 
-  
-elif nav == "论文":
+elif nav == "Mathmatics":
+    st.title("数学")
+
+elif nav == "Collage of English":
+    st.title("大学英语")
+elif nav == "Article":
     st.title("论文")
     with st.expander("智能流水车间调度与优化的仿真模拟——基于Python的遥控器生产线建模与优化"):
         st.subheader("第一届全国大学生仿真建模应用挑战赛")
