@@ -1,8 +1,11 @@
-import streamlit as st
-from datetime import datetime
 import ffmpeg
-import subprocess
 import os
+import tempfile
+from datetime import datetime
+from pathlib import Path
+import streamlit as st
+import subprocess
+import tempfile
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
@@ -132,7 +135,7 @@ def adjust_video_speed_improved(input_file, output_file, speed_factor=1.0):
 
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速"])
+nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速","M4A转MP3"])
 
 if nav == "视频转GIF":
     st.title("视频转GIF工具")
@@ -209,7 +212,6 @@ if nav == "视频转GIF":
 
 elif nav == "视频调速":
     st.title("视频调速工具")
-
     uploaded_file = st.file_uploader("选择视频文件", type=['mp4', 'avi', 'mov', 'mkv'])
 
     if uploaded_file is not None:
@@ -267,3 +269,197 @@ elif nav == "视频调速":
                         os.remove(video_path)
                     if os.path.exists(output_filename):
                         os.remove(output_filename)
+elif nav == "M4A转MP3":
+
+    def ffmpeg_m4a_to_mp3_best(input_file, output_file):
+        """使用 FFmpeg 原生 MP3 编码器进行最高质量转换"""
+        cmd = [
+            'ffmpeg',
+            '-i', input_file,
+            '-vn',
+            '-acodec', 'mp3',  # 使用原生 MP3 编码器（兼容所有 FFmpeg）
+            '-b:a', '320k',  # 比特率 320k
+            '-q:a', '0',  # 质量等级 0（0=最好，9=最差）
+            '-y',
+            output_file
+        ]
+        try:
+            subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', check=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            st.error(f"FFmpeg 错误: {e.stderr}")
+            return False
+        except FileNotFoundError:
+            st.error("未找到 FFmpeg，请确保已安装并添加到系统 PATH。")
+            return False
+
+
+    def batch_convert_m4a_to_mp3(source_dir, target_dir, progress_callback=None):
+        """批量转换文件夹内所有 .m4a 文件"""
+        if not os.path.exists(source_dir):
+            st.error(f"源文件夹不存在：{source_dir}")
+            return 0, 0
+        os.makedirs(target_dir, exist_ok=True)
+        m4a_files = [f for f in os.listdir(source_dir) if f.lower().endswith('.m4a')]
+        total = len(m4a_files)
+        if total == 0:
+            st.warning("源文件夹中没有找到 .m4a 文件")
+            return 0, 0
+        success, fail = 0, 0
+        for idx, filename in enumerate(m4a_files):
+            input_path = os.path.join(source_dir, filename)
+            output_path = os.path.join(target_dir, f"{Path(filename).stem}.mp3")
+            if progress_callback:
+                progress_callback(idx, total, filename)
+            if ffmpeg_m4a_to_mp3_best(input_path, output_path):
+                success += 1
+            else:
+                fail += 1
+        return success, fail
+
+
+    # Streamlit 页面设置
+    st.set_page_config(page_title="M4A→MP3转换器", page_icon="🎵", layout="centered")
+    st.title("M4A 转 MP3 工具")
+    st.markdown("采用 **320kbps CBR** + **`-q:a 0`** 最高质量参数，最大限度保留音质。")
+
+    # 检查 FFmpeg 是否可用
+    def check_ffmpeg():
+        try:
+            subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
+            return True
+        except:
+            return False
+
+
+    if not check_ffmpeg():
+        st.error("⚠️ 未检测到 FFmpeg，请安装并将其加入系统 PATH。")
+        st.info("""
+        **Windows**: 下载 [FFmpeg](https://ffmpeg.org/download.html) → 解压 → 将 `bin` 目录添加到环境变量 PATH。
+        **macOS**: `brew install ffmpeg`
+        **Linux**: `sudo apt install ffmpeg`
+        """)
+        st.stop()
+
+    mode = st.sidebar.radio("选择功能", ["📁 单文件转换", "📂 批量文件夹转换"])
+
+    if mode == "📁 单文件转换":
+        st.subheader("上传单个 M4A 文件并转换为 MP3")
+        uploaded_file = st.file_uploader("选择 M4A 文件", type=['m4a', 'mp4'], key="single")
+        if uploaded_file is not None:
+            suffix = Path(uploaded_file.name).suffix
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_input:
+                tmp_input.write(uploaded_file.getbuffer())
+                tmp_input_path = tmp_input.name
+            output_filename = f"{Path(uploaded_file.name).stem}.mp3"
+            output_path = os.path.join(tempfile.gettempdir(), output_filename)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.audio(tmp_input_path, format="audio/m4a")
+            if st.button("开始转换", type="primary"):
+                with st.spinner("转换中，请稍候..."):
+                    success = ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
+                if success:
+                    st.success("✅ 转换完成！")
+                    with col2:
+                        st.audio(output_path, format="audio/mp3")
+                    with open(output_path, "rb") as f:
+                        st.download_button(
+                            label="📥 下载 MP3",
+                            data=f,
+                            file_name=output_filename,
+                            mime="audio/mpeg"
+                        )
+            try:
+                os.unlink(tmp_input_path)
+                os.unlink(output_path)
+            except:
+                pass
+
+
+    elif mode == "📂 批量文件夹转换":
+        st.subheader("批量转换多个 M4A 文件")
+        # 多文件上传控件
+        uploaded_files = st.file_uploader(
+
+            "选择多个 M4A 文件",
+            type=['m4a', 'mp4'],
+            accept_multiple_files=True,
+            key="batch_files"
+        )
+
+        if uploaded_files:
+            st.info(f"已选择 {len(uploaded_files)} 个文件")
+            # 显示文件列表
+            for f in uploaded_files:
+                st.write(f"📄 {f.name}")
+
+            # 开始转换按钮
+
+            if st.button("开始批量转换", type="primary"):
+                # 创建临时目录存放输出文件
+                import tempfile
+                import zipfile
+                from datetime import datetime
+                output_dir = tempfile.mkdtemp()
+                success_count = 0
+                fail_count = 0
+                # 进度显示
+                progress_bar = st.progress(0, text="准备转换...")
+                status_text = st.empty()
+                log_placeholder = st.empty()
+                log_messages = []
+                total = len(uploaded_files)
+                for idx, uploaded_file in enumerate(uploaded_files):
+                    # 更新进度
+                    progress = (idx + 1) / total
+                    progress_bar.progress(progress, text=f"正在转换：{uploaded_file.name}")
+                    status_text.info(f"进度：{idx + 1}/{total}")
+                    # 保存上传文件到临时路径
+                    suffix = Path(uploaded_file.name).suffix
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_input:
+                        tmp_input.write(uploaded_file.getbuffer())
+                        tmp_input_path = tmp_input.name
+                    # 输出文件路径
+                    output_filename = f"{Path(uploaded_file.name).stem}.mp3"
+                    output_path = os.path.join(output_dir, output_filename)
+                    # 执行转换
+                    try:
+                        success = ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
+                    except Exception as e:
+                        success = False
+                        st.error(f"转换 {uploaded_file.name} 时出错：{str(e)}")
+                    # 清理输入临时文件
+                    os.unlink(tmp_input_path)
+                    if success:
+                        success_count += 1
+                        log_messages.append(f"✅ {uploaded_file.name} → MP3")
+                    else:
+                        fail_count += 1
+                        log_messages.append(f"❌ {uploaded_file.name} 转换失败")
+                    log_placeholder.code("\n".join(log_messages[-5:]))
+                progress_bar.empty()
+                status_text.empty()
+                # 汇总结果
+                if fail_count == 0:
+                    st.success(f"🎉 全部转换成功！共 {success_count} 个文件。")
+                else:
+                    st.warning(f"转换完成。成功 {success_count} 个，失败 {fail_count} 个。")
+                # 提供打包下载
+                if success_count > 0:
+                    zip_path = os.path.join(tempfile.gettempdir(),
+                                            f"converted_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip")
+                    with zipfile.ZipFile(zip_path, 'w') as zipf:
+                        for filename in os.listdir(output_dir):
+                            if filename.endswith('.mp3'):
+                                file_path = os.path.join(output_dir, filename)
+                                zipf.write(file_path, arcname=filename)
+                    with open(zip_path, "rb") as f:
+                        st.download_button(
+                            label="📥 下载全部转换后的 MP3 (ZIP)",
+                            data=f,
+                            file_name=os.path.basename(zip_path),
+                            mime="application/zip"
+                        )
+    st.markdown("---")
+    st.caption("转换引擎：FFmpeg 原生 MP3 编码器 | 参数：-b:a 320k -q:a 0")
