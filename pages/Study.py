@@ -12,22 +12,11 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 # 使用 selectbox 实现导航
 nav = st.sidebar.selectbox("导航栏",
-                           ["首页", "Mathmatics",  "Collage of English","Article"])
-if nav == "首页":
+                           ["Mathmatics",  "Collage of English","Article"])
+if nav == "Mathmatics":
     # st.markdown("<style>.stApp{background:linear-gradient(123deg,#F1FAEE 0%,#A8DADC 100%);}</style>",unsafe_allow_html=True)
     st.title("欢迎来到学习板块！")
     st.write("在这里有你想知道并且我们有的资料，点击左边导航栏查看详情！")
-
-    st.divider()
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    docx_file_path = os.path.join(script_dir, "..", "vedio", "北大数学.mp4")
-    video_path = os.path.normpath(docx_file_path)
-    if os.path.exists(video_path):
-        st.video(video_path, format="video/mp4", start_time=0,autoplay=True)
-    else:
-        st.error(f"视频文件未找到：{os.path.abspath(video_path)}")
-
-elif nav == "Mathmatics":
     # 自定义CSS样式美化
     st.markdown("""
     <style>

@@ -155,6 +155,11 @@ if nav == "荣誉":
             "title1":"计算机一级WPS Office",
             "title2":"成绩 良好",
         },
+        {
+            "image":"./image/实习.jpg",
+            "title1":"广元市新媒体联盟通讯员实习证明",
+            "title2":"广元团市委新媒体中心实习",
+        },
         ]
 
         st.markdown(
