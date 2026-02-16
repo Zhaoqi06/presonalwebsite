@@ -597,7 +597,6 @@ if nav == "批量找图":
                 st.error(f"程序运行出错：{str(e)}")
 
     # ========== 核心修复：基于会话状态显示按钮 ==========
-    # 只有下载到图片时，才显示“生成压缩包”按钮
     if st.session_state.downloaded_count > 0:
         # 生成压缩包按钮（点击后保存压缩包路径到会话状态）
         if st.button("生成压缩包", type="primary") and st.session_state.zip_path == "":
