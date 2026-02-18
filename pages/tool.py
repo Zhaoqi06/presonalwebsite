@@ -363,6 +363,7 @@ elif nav == "麻将计分":
     st.header("麻将计分系统")
     if st.session_state['username'] not in user:
         st.error("不好意思，你不是麻将搭子，请联系管理员将你设为搭子！")
+        st.stop()
     st.write("当前成员及其得分情况！")
     if user:
         df = pd.DataFrame(data={
