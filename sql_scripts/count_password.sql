@@ -65,3 +65,12 @@ CREATE TABLE IF NOT EXISTS invite_number (
     invite_num INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+--===============================================================================================
+-- 1. 创建麻将分数表（核心表）
+-- 作用：存储用户账号的核心信息，包含必要字段和约束，保障账号唯一性和数据完整性
+CREATE TABLE IF NOT EXISTS majiang (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    socre INTEGER NOT NULL
+);
