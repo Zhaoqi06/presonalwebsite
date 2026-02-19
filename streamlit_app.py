@@ -1,6 +1,5 @@
 import streamlit as st
 import function as f
-
 # ==================== Streamlit页面逻辑 ====================
 # 页面基础配置
 st.set_page_config(page_title="首页", layout="wide")

@@ -396,38 +396,48 @@ elif nav == "麻将计分":
             name = st.selectbox("请选择人名！", options=user)
         with col2:
             score_grain = st.number_input("得分 ",value = 0)
-        if st.button("提交", type="primary"):
-            if name:
-                new_record = {
-                    "time":time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "from" : st.session_state['username'],
-                    "to" : name,
-                    "score" : score_grain,
-                }
-                save_records(new_record)
-                f.get_db_connection_count_password()
-                f.init_count_majiang()
-                information = f.read_majiang()
-                user = []
-                socre = []
-                for info in information:
-                    user.append(info["username"])
-                    socre.append(info["socre"])
-                temp = user.index(name)
-                temp_num = socre[temp]
-                score_grain = score_grain + temp_num
-                f.Updata_majiang(name,score_grain)
-                st.success("提交成功")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("提交", type="primary"):
+                if name:
+                    new_record = {
+                        "time":time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "from" : st.session_state['username'],
+                        "to" : name,
+                        "score" : score_grain,
+                    }
+                    save_records(new_record)
+                    f.get_db_connection_count_password()
+                    f.init_count_majiang()
+                    information = f.read_majiang()
+                    user = []
+                    socre = []
+                    for info in information:
+                        user.append(info["username"])
+                        socre.append(info["socre"])
+                    temp = user.index(name)
+                    temp_self = user.index(st.session_state['username'])
+                    temp_num = socre[temp]
+                    temp_self_num = socre[temp_self]
+                    score_grain = score_grain + temp_num
+                    score_reduce = temp_self_num - score_grain
+                    f.Updata_majiang(name,score_grain)
+                    f.Updata_majiang(st.session_state['username'], score_reduce)
+                    st.success("提交成功")
+                    st.rerun()
+                else:
+                    st.error("请正确填写")
+        with col2:
+            if st.button("刷新", type="primary"):
                 st.rerun()
-            else:
-                st.error("请正确填写")
 
 
         st.header("积分记录")
         records = load_records()
         if records:
             for idx,r in enumerate(reversed(records),1):
-                st.markdown(f"""**{r['time']}**  **{r['from']}-->{r['to']} :**{r['score']}**""")
+                st.markdown(f"""**{r['time']}**  **{r['from']}-->{r['to']} :{r['score']}**""")
         else:
             st.info("暂无积分记录")
 

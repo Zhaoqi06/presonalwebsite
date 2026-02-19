@@ -11,7 +11,6 @@ if "logged_in" not in st.session_state:  # 统一登录状态标识
 if "username" not in st.session_state:
     st.session_state["username"] = ""
 
-
 # 隐藏默认导航/水印
 st.markdown("""
     <style>
@@ -21,7 +20,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-f.init_count_password_table()
 information = f.read_count_password()
 user_data = {}
 for info in information:
