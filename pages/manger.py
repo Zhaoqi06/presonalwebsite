@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 import function as f
 import pandas as pd
-
+import time
 # ==================== 全局前置校验 ====================
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
@@ -39,6 +39,9 @@ if ADMIN_USER == st.session_state["username"]:
                 st.error("请填写完整的信息！")
             else:
                 f.write_notification(title_input, text_input, time_input)
+                st.success("发布成功")
+                time.sleep(1)
+                st.rerun()
 
         st.divider()
 
@@ -61,6 +64,9 @@ if ADMIN_USER == st.session_state["username"]:
                 st.error("请输入要删除的通知ID！")
             else:
                 f.delete_notification(id=id_input)
+                st.success("删除成功")
+                time.sleep(1)
+                st.rerun()
     if nav == "查看用户及密码":
         st.header("网站所有用户及密码")
         user = []
@@ -84,6 +90,9 @@ if ADMIN_USER == st.session_state["username"]:
             if username in user:
                 f.Updata_count_password(username, password)
                 st.success("修改成功！")
+                time.sleep(1)
+                st.rerun()
+
             else:
                 st.error("用户名不存在！")
 
@@ -106,10 +115,13 @@ if ADMIN_USER == st.session_state["username"]:
                     st.error("用户名已存在！")
                 else:
                     f.write_count_password(username, password)
-                st.success("添加成功！")
+                    st.success("添加成功！")
+                    time.sleep(1)
+                    st.rerun()
         with col2:
             if st.button("删除"):
                 f.delete_count_password(username)
+                st.rerun()
                 st.success("删除成功！")
     if nav == "查看邀请码":
         st.header("查看邀请码")
@@ -117,7 +129,7 @@ if ADMIN_USER == st.session_state["username"]:
 
     if nav == "麻将成员管理":
         st.header("在这里管理麻将成员信息")
-        st.write("注意该页面最好在GITHUB上运行，每天数据会自动清楚，本地不会！！！")
+        st.write("注意该页面最好在GITHUB上运行，每天数据会自动清除，本地不会！！！")
         st.divider()
 
         f.get_db_connection_count_password()

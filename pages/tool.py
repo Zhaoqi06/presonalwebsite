@@ -10,7 +10,7 @@ import shutil
 import requests
 import time
 from urllib.parse import urlencode
-from bs4 import BeautifulSoup
+import json
 import pandas as pd
 import function as f
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
@@ -341,7 +341,7 @@ if nav == "批量找图":
                     data=zip_file,
                     file_name=os.path.basename(st.session_state.zip_path),
                     mime="application/zip",
-                    # 下载后清理文件（可选）
+                    # 下载后清理文件
                     on_click=lambda: (
                         shutil.rmtree(st.session_state.output_dir, ignore_errors=True),
                         os.remove(st.session_state.zip_path) if os.path.exists(st.session_state.zip_path) else None,
@@ -352,6 +352,25 @@ if nav == "批量找图":
         st.warning("未下载到任何图片，请更换关键词或减少查找数量重试！")
 
 elif nav == "麻将计分":
+    # =============记忆中枢====================
+    RECORD_FILE = "./document/mahjiong_scores.json"
+
+    if not os.path.exists(RECORD_FILE):
+        with open(RECORD_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+
+
+    def load_records():
+        with open(RECORD_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+
+    def save_records(new_name):
+        records = load_records()
+        records.append(new_name)
+        with open(RECORD_FILE, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
+
     f.get_db_connection_count_password()
     f.init_count_majiang()
     information = f.read_majiang()
@@ -378,17 +397,40 @@ elif nav == "麻将计分":
         with col2:
             score_grain = st.number_input("得分 ",value = 0)
         if st.button("提交", type="primary"):
-            f.get_db_connection_count_password()
-            f.init_count_majiang()
-            information = f.read_majiang()
-            user = []
-            socre = []
-            for info in information:
-                user.append(info["username"])
-                socre.append(info["socre"])
-            temp = user.index(name)
-            temp_num = socre[temp]
-            score_grain = score_grain + temp_num
-            f.Updata_majiang(name, score_grain)
-            st.success("提交成功")
-            st.rerun()
+            if name:
+                new_record = {
+                    "time":time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "from" : st.session_state['username'],
+                    "to" : name,
+                    "score" : score_grain,
+                }
+                save_records(new_record)
+                f.get_db_connection_count_password()
+                f.init_count_majiang()
+                information = f.read_majiang()
+                user = []
+                socre = []
+                for info in information:
+                    user.append(info["username"])
+                    socre.append(info["socre"])
+                temp = user.index(name)
+                temp_num = socre[temp]
+                score_grain = score_grain + temp_num
+                f.Updata_majiang(name,score_grain)
+                st.success("提交成功")
+                st.rerun()
+            else:
+                st.error("请正确填写")
+
+
+        st.header("积分记录")
+        records = load_records()
+        if records:
+            for idx,r in enumerate(reversed(records),1):
+                st.markdown(f"""**{r['time']}**  **{r['from']}-->{r['to']} :**{r['score']}**""")
+        else:
+            st.info("暂无积分记录")
+
+
+
+
