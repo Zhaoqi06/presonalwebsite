@@ -4,13 +4,17 @@ import time
 import json
 import pandas as pd
 import function as f
-
-# 拦截未登录用户
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
     st.switch_page("pages/login.py")
 
-# =============记忆中枢====================
+
+if "majiang_score_self" not in st.session_state:
+    st.session_state["majiang_score_self"] = 0
+
+if "majiang_score_other" not in st.session_state:
+    st.session_state["majiang_score_other"] = 0
+
 RECORD_FILE = "./document/mahjiong_scores.json"
 
 if not os.path.exists(RECORD_FILE):
@@ -59,6 +63,7 @@ if user:
     col1, col2 = st.columns(2)
     with col1:
         if st.button("提交", type="primary"):
+            time.sleep(0.5)
             if name:
                 new_record = {
                     "time": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -75,14 +80,13 @@ if user:
                 for info in information:
                     user.append(info["username"])
                     socre.append(info["socre"])
-                temp = user.index(name)
-                temp_self = user.index(st.session_state['username'])
-                temp_num = socre[temp]
-                temp_self_num = socre[temp_self]
-                score_grain = score_grain + temp_num
-                score_reduce = temp_self_num - score_grain
-                f.Updata_majiang(name, score_grain)
-                f.Updata_majiang(st.session_state['username'], score_reduce)
+                st.session_state["majiang_score_other"] = socre[user.index(name)]
+                st.session_state["majiang_score_self"] = socre[user.index(st.session_state['username'])]
+                st.session_state["majiang_score_other"] = score_grain + st.session_state["majiang_score_other"]
+                st.session_state["majiang_score_self"] = st.session_state["majiang_score_self"] - score_grain
+                f.Updata_majiang(name, st.session_state["majiang_score_other"])
+                f.Updata_majiang(st.session_state['username'], st.session_state["majiang_score_self"])
+
                 st.success("提交成功")
                 st.rerun()
             else:
