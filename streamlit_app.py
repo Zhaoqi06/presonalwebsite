@@ -25,7 +25,7 @@ with col1:
     if st.button("国际交流协会"):
         st.switch_page("pages/association.py")
 with col2:
-    if st.button("麻将计分"):
+    if st.button("麻将计分(限时入口)"):
         st.switch_page("pages/maj.py")
 with col3:
     if st.button("实用工具"):
