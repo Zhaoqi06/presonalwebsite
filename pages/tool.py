@@ -10,7 +10,7 @@ import time
 from filelock import FileLock
 import json
 import pandas as pd
-import function as f
+import function as fc
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
     st.switch_page("pages/login.py")
@@ -58,7 +58,7 @@ if nav == "视频转GIF":
                         gif_filename = f"output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gif"
 
                         # 使用高质量转换函数
-                        success = f.mp4_to_gif_high_quality(
+                        success = fc.mp4_to_gif_high_quality(
                             video_path,
                             gif_filename,
                             start_time=start_time,
@@ -125,7 +125,7 @@ elif nav == "视频调速":
                     output_filename = f"speed_adjusted_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
 
                     # 使用优化后的视频调速函数
-                    success = f.adjust_video_speed_improved(video_path, output_filename, speed_factor)
+                    success = fc.adjust_video_speed_improved(video_path, output_filename, speed_factor)
 
                     if success:
                         # 显示结果
@@ -156,7 +156,7 @@ elif nav == "M4A转MP3":
     st.set_page_config(page_title="M4A→MP3转换器", page_icon="🎵", layout="centered")
     st.title("M4A 转 MP3 工具")
     st.markdown("采用 **320kbps CBR** + **`-q:a 0`** 最高质量参数，最大限度保留音质。")
-    if not f.check_ffmpeg():
+    if not fc.check_ffmpeg():
         st.error("⚠️ 未检测到 FFmpeg，请安装并将其加入系统 PATH。")
         st.info("""
         **Windows**: 下载 [FFmpeg](https://ffmpeg.org/download.html) → 解压 → 将 `bin` 目录添加到环境变量 PATH。
@@ -182,7 +182,7 @@ elif nav == "M4A转MP3":
                 st.audio(tmp_input_path, format="audio/m4a")
             if st.button("开始转换", type="primary"):
                 with st.spinner("转换中，请稍候..."):
-                    success = f.ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
+                    success = fc.ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
                 if success:
                     st.success("✅ 转换完成！")
                     with col2:
@@ -245,7 +245,7 @@ elif nav == "M4A转MP3":
                     output_path = os.path.join(output_dir, output_filename)
                     # 执行转换
                     try:
-                        success = f.ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
+                        success = fc.ffmpeg_m4a_to_mp3_best(tmp_input_path, output_path)
                     except Exception as e:
                         success = False
                         st.error(f"转换 {uploaded_file.name} 时出错：{str(e)}")
@@ -311,7 +311,7 @@ if nav == "批量找图":
                     # 重置会话状态（避免旧数据干扰）
                     st.session_state.output_dir = tempfile.mkdtemp(prefix=f"{search_keyword}_imgs_")
                     # 调用下载函数并保存下载数量到会话状态
-                    st.session_state.downloaded_count = f.bing_image_downloader(
+                    st.session_state.downloaded_count = fc.bing_image_downloader(
                         keyword=search_keyword,
                         save_dir=st.session_state.output_dir,
                         max_count=max_count
@@ -387,9 +387,9 @@ elif nav == "麻将计分":
     # 加载麻将搭子数据
     def refresh_majiang_data():
         """封装数据加载逻辑，方便复用"""
-        f.get_db_connection_count_password()
-        f.init_count_majiang()
-        return f.read_majiang()
+        fc.get_db_connection_count_password()
+        fc.init_count_majiang()
+        return fc.read_majiang()
 
 
     information = refresh_majiang_data()
@@ -460,8 +460,8 @@ elif nav == "麻将计分":
                     new_target_score = target_user_score + score_change
 
                     # 4. 更新数据库（直接用计算后的新值，无中转）
-                    f.Updata_majiang(current_user, new_current_score)
-                    f.Updata_majiang(target_user, new_target_score)
+                    fc.Updata_majiang(current_user, new_current_score)
+                    fc.Updata_majiang(target_user, new_target_score)
 
                     st.success(f"提交成功！{current_user} 扣 {score_change} 分，{target_user} 加 {score_change} 分")
                     st.rerun()
