@@ -431,42 +431,45 @@ elif nav == "麻将计分":
         col1, col2 = st.columns(2)
         with col1:
             if st.button("提交", type="primary"):
-                time.sleep(0.5)
-                if target_user and score_change != 0:  # 分数不能为0，避免无效提交
-                    # 1. 构造新记录
-                    new_record = {
-                        "time": time.strftime("%Y-%m-%d %H:%M:%S"),
-                        "from": current_user,
-                        "to": target_user,
-                        "score": score_change,
-                    }
-                    save_records(new_record)
-
-                    # 2. 核心修复：直接从数据库取最新得分，不依赖session_state
-                    # 重新加载最新数据
-                    latest_info = refresh_majiang_data()
-
-                    # 找到当前用户和目标用户的最新得分
-                    current_user_score = 0
-                    target_user_score = 0
-                    for info in latest_info:
-                        if info["username"] == current_user:
-                            current_user_score = info["socre"]
-                        if info["username"] == target_user:
-                            target_user_score = info["socre"]
-
-                    # 3. 计算新得分（当前用户减分，目标用户加分）
-                    new_current_score = current_user_score - score_change
-                    new_target_score = target_user_score + score_change
-
-                    # 4. 更新数据库（直接用计算后的新值，无中转）
-                    fc.Updata_majiang(current_user, new_current_score)
-                    fc.Updata_majiang(target_user, new_target_score)
-
-                    st.success(f"提交成功！{current_user} 扣 {score_change} 分，{target_user} 加 {score_change} 分")
-                    st.rerun()
+                if score_change < 0:
+                    st.error("输入的分数有误，请重新输入！")
                 else:
-                    st.error("请选择对手，并输入非0的得分！")
+                    time.sleep(0.5)
+                    if target_user and score_change != 0:  # 分数不能为0，避免无效提交
+                        # 1. 构造新记录
+                        new_record = {
+                            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "from": current_user,
+                            "to": target_user,
+                            "score": score_change,
+                        }
+                        save_records(new_record)
+
+                        # 2. 核心修复：直接从数据库取最新得分，不依赖session_state
+                        # 重新加载最新数据
+                        latest_info = refresh_majiang_data()
+
+                        # 找到当前用户和目标用户的最新得分
+                        current_user_score = 0
+                        target_user_score = 0
+                        for info in latest_info:
+                            if info["username"] == current_user:
+                                current_user_score = info["socre"]
+                            if info["username"] == target_user:
+                                target_user_score = info["socre"]
+
+                        # 3. 计算新得分（当前用户减分，目标用户加分）
+                        new_current_score = current_user_score - score_change
+                        new_target_score = target_user_score + score_change
+
+                        # 4. 更新数据库（直接用计算后的新值，无中转）
+                        f.Updata_majiang(current_user, new_current_score)
+                        f.Updata_majiang(target_user, new_target_score)
+
+                        st.success(f"提交成功！{current_user} 扣 {score_change} 分，{target_user} 加 {score_change} 分")
+                        st.rerun()
+                    else:
+                        st.error("请选择对手，并输入非0的得分！")
         with col2:
             if st.button("刷新", type="primary"):
                 st.rerun()
