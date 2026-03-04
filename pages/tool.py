@@ -3,6 +3,7 @@ import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
+import logging
 import streamlit as st
 import zipfile
 import shutil
@@ -17,7 +18,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速","M4A转MP3","批量找图","麻将计分"])
+nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速","M4A转MP3","批量找图","麻将计分","MOV转MP4"])
 
 if nav == "视频转GIF":
     st.title("视频转GIF工具")
@@ -483,6 +484,223 @@ elif nav == "麻将计分":
         else:
             st.info("暂无积分记录")
 
+elif nav == "MOV转MP4":
+    st.header("MOV转MP4格式！")
 
+    import subprocess
+    import re
+    import logging
+    from tqdm import tqdm
 
+    # 配置日志
+    logging.basicConfig(level=logging.INFO)
 
+    def get_video_duration(input_path):
+        """获取视频总时长（秒），用于进度计算"""
+        try:
+            cmd = [
+                'ffmpeg', '-i', input_path,
+                '-f', 'null', '-',
+                '-hide_banner', '-loglevel', 'error',
+                '-stats'
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            # 匹配时长（如 Duration: 00:01:23.45, start: 0.000000, bitrate: ...）
+            duration_pattern = re.compile(r'Duration: (\d+:\d+:\d+\.\d+)')
+            match = duration_pattern.search(result.stderr)
+            if match:
+                time_str = match.group(1)
+                h, m, s = time_str.split(':')
+                return int(h) * 3600 + int(m) * 60 + float(s)
+        except Exception as e:
+            logging.error(f"获取视频时长失败：{str(e)}")
+        return None
+
+    def convert_mov_to_mp4(
+            input_path,
+            output_path,
+            video_bitrate="5M",  # 视频比特率（默认5Mbps，可改如"10M"）
+            resolution=None,  # 分辨率（如"1920x1080"，None则保持原分辨率）
+            fps=None,  # 帧率（如30，None则保持原帧率）
+            audio_bitrate="128k"  # 音频比特率
+    ):
+        """转换单个MOV文件为MP4"""
+        # 检查输入文件是否存在
+        if not os.path.exists(input_path):
+            logging.error(f"输入文件不存在：{input_path}")
+            return False
+
+        # 检查输入是否为MOV文件
+        if not input_path.lower().endswith('.mov'):
+            logging.error(f"非MOV文件，跳过：{input_path}")
+            return False
+
+        # 创建输出文件夹（如果不存在）
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+
+        # 获取视频总时长（修复total_duration未定义问题）
+        total_duration = get_video_duration(input_path)
+
+        # 构建ffmpeg命令
+        cmd = [
+            'ffmpeg',
+            '-i', input_path,  # 输入文件
+            '-vcodec', 'libx264',  # 视频编码（MP4主流编码）
+            '-acodec', 'aac',  # 音频编码
+            '-b:v', video_bitrate,  # 视频比特率
+            '-b:a', audio_bitrate,  # 音频比特率
+            '-strict', 'experimental',  # 兼容部分音频格式
+            '-y'  # 覆盖已有文件
+        ]
+
+        # 添加分辨率参数（如果指定）
+        if resolution:
+            cmd.extend(['-s', resolution])
+
+        # 添加帧率参数（如果指定）
+        if fps:
+            cmd.extend(['-r', str(fps)])
+
+        # 输出文件
+        cmd.append(output_path)
+
+        try:
+            # 执行ffmpeg命令并捕获输出
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1  # 行缓冲，实时获取输出
+            )
+
+            # 正则表达式：匹配ffmpeg输出中的时间（如 time=00:01:23.45）
+            time_pattern = re.compile(r'time=(\d+:\d+:\d+\.\d+)')
+            progress_bar = None
+
+            # 实时解析输出，更新进度条
+            for line in process.stdout:
+                match = time_pattern.search(line)
+                if match and total_duration:
+                    # 解析当前时间（转为秒）
+                    time_str = match.group(1)
+                    h, m, s = time_str.split(':')
+                    current_seconds = int(h) * 3600 + int(m) * 60 + float(s)
+                    progress = min(100, current_seconds / total_duration * 100)
+
+                    # 初始化进度条
+                    if not progress_bar:
+                        progress_bar = tqdm(total=100, unit='%', desc=os.path.basename(input_path))
+                    # 更新进度条
+                    progress_bar.update(progress - progress_bar.n)
+
+            # 等待进程结束
+            process.wait()
+
+            # 关闭进度条
+            if progress_bar:
+                progress_bar.close()
+
+            # 检查转换是否成功
+            if process.returncode == 0:
+                logging.info(f"转换成功：{output_path}")
+                return True
+            else:
+                logging.error(f"转换失败（返回码：{process.returncode}）：{input_path}")
+                return False
+
+        except Exception as e:
+            logging.error(f"转换出错：{str(e)}，文件：{input_path}")
+            return False
+
+    def batch_convert(input_path, output_dir, **kwargs):
+        """批量转换（输入为文件或文件夹）"""
+        if os.path.isfile(input_path):
+            # 单个文件处理
+            filename = os.path.basename(input_path)
+            output_filename = os.path.splitext(filename)[0] + '.mp4'
+            output_path = os.path.join(output_dir, output_filename)
+            return convert_mov_to_mp4(input_path, output_path,** kwargs)
+        elif os.path.isdir(input_path):
+            # 文件夹批量处理（只处理MOV文件）
+            success_count = 0
+            fail_count = 0
+            for root, _, files in os.walk(input_path):
+                for file in files:
+                    if file.lower().endswith('.mov'):
+                        input_file = os.path.join(root, file)
+                        # 保持原文件夹结构输出
+                        relative_path = os.path.relpath(root, input_path)
+                        output_subdir = os.path.join(output_dir, relative_path)
+                        output_file = os.path.join(output_subdir, os.path.splitext(file)[0] + '.mp4')
+                        if convert_mov_to_mp4(input_file, output_file, **kwargs):
+                            success_count += 1
+                        else:
+                            fail_count += 1
+            logging.info(f"批量转换完成：成功{success_count}个，失败{fail_count}个")
+            return success_count > 0
+        else:
+            logging.error(f"输入路径无效：{input_path}")
+            return False
+
+    # ========== 新增Streamlit交互逻辑（适配前端使用） ==========
+    # 1. 文件上传
+    uploaded_file = st.file_uploader("选择MOV文件", type=['mov'], key="mov2mp4")
+
+    # 2. 转换参数配置
+    st.subheader("转换参数")
+    col1, col2 = st.columns(2)
+    with col1:
+        video_bitrate = st.text_input("视频比特率", value="5M", help="如5M/10M，数值越大画质越好")
+        resolution = st.text_input("分辨率（选填）", placeholder="如1920x1080，留空保持原分辨率")
+    with col2:
+        fps = st.number_input("帧率（选填）", min_value=1, max_value=60, value=None, placeholder="留空保持原帧率")
+        audio_bitrate = st.text_input("音频比特率", value="128k", help="如128k/192k")
+
+    # 3. 转换逻辑
+    if uploaded_file is not None:
+        # 保存上传的MOV文件到临时路径
+        temp_mov = tempfile.NamedTemporaryFile(delete=False, suffix='.mov')
+        temp_mov.write(uploaded_file.getbuffer())
+        temp_mov.close()
+
+        # 输出路径
+        output_mp4 = os.path.join(tempfile.gettempdir(), f"{os.path.splitext(uploaded_file.name)[0]}.mp4")
+
+        # 转换按钮
+        if st.button("开始转换", type="primary"):
+            with st.spinner("正在转换..."):
+                # 整理参数（过滤空值）
+                convert_kwargs = {
+                    "video_bitrate": video_bitrate,
+                    "audio_bitrate": audio_bitrate
+                }
+                if resolution.strip():
+                    convert_kwargs["resolution"] = resolution.strip()
+                if fps:
+                    convert_kwargs["fps"] = fps
+
+                # 执行转换
+                success = convert_mov_to_mp4(temp_mov.name, output_mp4,** convert_kwargs)
+
+                if success:
+                    st.success("转换成功！")
+                    # 预览视频
+                    st.video(output_mp4)
+                    # 下载按钮
+                    with open(output_mp4, "rb") as f:
+                        st.download_button(
+                            label="下载MP4文件",
+                            data=f,
+                            file_name=f"{os.path.splitext(uploaded_file.name)[0]}.mp4",
+                            mime="video/mp4"
+                        )
+                else:
+                    st.error("转换失败，请检查文件或参数！")
+
+            # 清理临时文件
+            os.unlink(temp_mov.name)
+            if os.path.exists(output_mp4):
+                os.unlink(output_mp4)
