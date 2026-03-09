@@ -5,6 +5,11 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
     st.switch_page("pages/login.py")
 
+if "change_password" not in st.session_state:
+    st.session_state["change_password"] = ""
+
+if "change_username" not in st.session_state:
+    st.session_state["change_username"] = ""
 st.title("个人中心")
 st.divider()
 f.init_count_password_table()
@@ -13,14 +18,16 @@ ADMIN_USER = "刘钊齐"
 
 if nav == "首页":
     st.write("修改账户名以及密码")
-    username = st.text_input("请输入用户名：")
-    password = st.text_input("请输入密码：", type="password")
+    st.session_state["change_username"] = st.text_input("请输入用户名：")
+    st.session_state["change_password"] = st.text_input("请输入密码：", type="password")
     if st.button("修改"):
-        if username == st.session_state["username"]:
-            f.Updata_count_password(username, password)
+        if st.session_state["change_username"] == st.session_state["username"]:
+            f.Updata_count_password(st.session_state["change_username"], st.session_state["change_password"])
             st.success("修改成功！")
         else:
             st.error("请输入自己用户名！")
+            st.session_state["change_username"] = ""
+            st.session_state["change_password"] = ""
 
 if nav == "荣誉":
     if ADMIN_USER == st.session_state["username"]:

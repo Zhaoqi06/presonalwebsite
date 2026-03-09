@@ -9,20 +9,18 @@
       <jdbc-url>jdbc:sqlite:identifier.sqlite</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="count_password" uuid="4da27640-9087-4813-ac95-07d601fd246a">
+    <data-source source="LOCAL" name="notification [2]" uuid="dc77df6b-2c11-4d54-8750-5e9a813a35ed">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
-      <remarks>储存账号和密码</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:E:\Project_Document\GitHub\presonalwebsite\data\count_password.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/data/notification.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="notification" uuid="e7435d5e-6d61-4f05-b3c8-e8a910eda407">
+    <data-source source="LOCAL" name="count_password [2]" uuid="31748d3c-8f79-4e51-ac00-c61da5727dc7">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
-      <remarks>储存通知</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:E:\Project_Document\GitHub\presonalwebsite\data\notification.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/data/count_password.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

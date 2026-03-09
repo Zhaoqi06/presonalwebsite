@@ -19,20 +19,3 @@ CREATE INDEX IF NOT EXISTS idx_notify_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notify_status ON notifications(status);
 CREATE INDEX IF NOT EXISTS idx_notify_time ON notifications(send_time);
 
--- 3. 插入初始基础数据（可选）
--- 作用：给数据库预置一些默认数据，比如系统欢迎通知
-INSERT OR IGNORE INTO notifications (content, user_id, notify_type)
-VALUES
-    ('欢迎使用通知系统，你可以在这里接收所有重要提醒！', 1, 'system'),
-    ('你的账户已完成注册，请注意保管个人信息', 1, 'system');
-
--- 4. 常用维护语句（注释掉，需要时取消注释执行）
--- 作用：批量清理/更新数据，比如删除过期通知、批量标记已读
--- -- 批量标记3天前的未读通知为已读
--- UPDATE notifications
--- SET status = 1
--- WHERE status = 0 AND send_time < DATETIME('now', '-3 days');
-
--- -- 删除30天前的已删除通知（清理垃圾数据）
--- DELETE FROM notifications
--- WHERE status = 2 AND send_time < DATETIME('now', '-30 days');
