@@ -163,7 +163,8 @@ class FakeFileModule:
             {"username": "玩家2"},
             {"username": "测试用户"}
         ]
-'''
+
+
 f = FakeFileModule()
 # 主游戏逻辑
 def card_war_game():
@@ -411,4 +412,3 @@ if nav == "卡牌战争":
         st.session_state["p1_cards"] = []  # 玩家1的牌
         st.session_state["p2_cards"] = []  # 对手的牌
         st.session_state["table_cards"] = []  # 桌上的牌
-'''
