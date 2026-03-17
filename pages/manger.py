@@ -3,6 +3,8 @@ from datetime import datetime
 import function as f
 import pandas as pd
 import time
+import os
+import json
 # ==================== 全局前置校验 ====================
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     st.error("请先登录")
@@ -23,7 +25,7 @@ ADMIN_USER = "刘钊齐"
 if ADMIN_USER == st.session_state["username"]:
     st.title("欢迎进入管理页面")
     st.divider()
-    nav = st.sidebar.selectbox("导航栏", ["分布通知", "查看用户及密码","增删成员","查看邀请码","麻将成员管理"])
+    nav = st.sidebar.selectbox("导航栏", ["分布通知", "查看用户及密码","增删成员","查看邀请码","麻将成员管理","协会活动排名"])
 
     if nav == "分布通知":
         # 发布通知模块
@@ -208,5 +210,189 @@ if ADMIN_USER == st.session_state["username"]:
                 st.rerun()
             except AttributeError:
                 st.experimental_rerun()
+    if nav == "协会活动排名":
+        st.header("协会活动排名")
+        st.divider()
+
+        import os
+        import json
+        import time
+        import pandas as pd
+
+        # 配置文件路径
+        JSON_FILE = "./document/members_score.json"
+        os.makedirs("./document", exist_ok=True)
+
+        # 初始化 JSON 文件
+        if not os.path.exists(JSON_FILE):
+            with open(JSON_FILE, "w", encoding="utf-8") as jf:
+                json.dump([], jf, ensure_ascii=False, indent=2)
+
+        # 加载积分数据
+        try:
+            with open(JSON_FILE, "r", encoding="utf-8") as jf:
+                score_data = json.load(jf)
+        except:
+            score_data = []
+
+        # ====================== 上传报名表 ======================
+        st.subheader("📤 上传活动报名表")
+        uploaded_file = st.file_uploader("请上传活动报名表（支持 .xlsx / .csv）", type=['xlsx', 'xls', 'csv'])
+
+        if uploaded_file is not None:
+            try:
+                file_name = uploaded_file.name
+                if file_name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file, skiprows=2)
+                else:
+                    df = pd.read_excel(uploaded_file, engine='openpyxl', skiprows=2)
+
+                # 自动匹配列（你的表格：序号、学号、姓名、班级...）
+                id_col = None
+                name_col = None
+                class_col = None
+
+                for col in df.columns:
+                    c = str(col).replace(" ", "")
+                    if "学号" in c: id_col = col
+                    if "姓名" in c: name_col = col
+                    if "班级" in c: class_col = col
+
+                # 找不到就按位置取（适配你的固定格式）
+                if len(df.columns) >= 4:
+                    if id_col is None: id_col = df.columns[1]
+                    if name_col is None: name_col = df.columns[2]
+                    if class_col is None: class_col = df.columns[3]
+
+                if not all([id_col, name_col, class_col]):
+                    st.error("❌ 未找到 学号/姓名/班级 列，请检查表格")
+                else:
+                    # 读取并清理数据
+                    df_clean = df[[id_col, name_col, class_col]].dropna()
+                    existing_dict = {item["name"]: item for item in score_data}
+                    new_score_data = []
+
+                    for _, row in df_clean.iterrows():
+                        sid = str(row[id_col]).strip()
+                        name = str(row[name_col]).strip()
+                        cls = str(row[class_col]).strip()
+
+                        if not name: continue
+
+                        # 保留原有积分
+                        score = existing_dict.get(name, {}).get("score", 0)
+                        new_score_data.append({
+                            "name": name,
+                            "id": sid,
+                            "class": cls,
+                            "score": score
+                        })
+
+                    # 去重
+                    unique_data = {item["name"]: item for item in new_score_data}.values()
+                    score_data = list(unique_data)
+
+                    # 保存
+                    with open(JSON_FILE, "w", encoding="utf-8") as jf:
+                        json.dump(score_data, jf, ensure_ascii=False, indent=2)
+
+                    st.success(f"✅ 上传成功！共 {len(score_data)} 人")
+
+            except Exception as e:
+                st.error(f"❌ 读取失败：{str(e)}")
+
+        st.divider()
+
+        # ====================== 清除所有数据按钮 ======================
+        if score_data:
+            with st.expander("⚠️ 危险操作：清空所有成员数据"):
+                st.warning("此操作会清空【所有成员、学号、班级、积分】，无法恢复！")
+                col1, col2 = st.columns(2)
+                with col1:
+                    confirm = st.checkbox("我确认要清空所有数据")
+                with col2:
+                    clear_btn = st.button("🗑️ 一键清除所有", type="secondary")
+
+                if clear_btn and confirm:
+                    # 彻底清空 JSON 文件
+                    score_data = []
+                    with open(JSON_FILE, "w", encoding="utf-8") as jf:
+                        json.dump([], jf, ensure_ascii=False, indent=2)
+                    st.success("✅ 所有数据已清空！可以重新上传表格啦")
+                    time.sleep(1)
+                    st.rerun()
+
+        st.divider()
+
+        # ====================== 积分排名 ======================
+        st.subheader("📊 成员积分排名")
+        if score_data:
+            df_show = pd.DataFrame(score_data)
+            df_show = df_show[["name", "id", "class", "score"]]
+            df_show.columns = ["姓名", "学号", "班级", "积分"]
+            df_show = df_show.sort_values("积分", ascending=False).reset_index(drop=True)
+            st.dataframe(df_show, use_container_width=True, height=400)
+        else:
+            st.info("ℹ️ 暂无数据，请先上传报名表")
+
+        st.divider()
+
+        # ====================== 计分系统（两种加分方式） ======================
+        st.subheader("✏️ 积分管理（累加模式）")
+        add_type = st.radio("选择加分方式", ["按姓名", "按学号"], horizontal=True)
+
+        if not score_data:
+            st.warning("请先上传报名表")
+        else:
+            if add_type == "按姓名":
+                # 按姓名
+                name_options = [f"{item['name']} | {item['class']}" for item in score_data]
+                selected_option = st.selectbox("选择成员", name_options)
+                selected_name = selected_option.split("|")[0].strip()
+
+                # 找到当前成员
+                selected_item = None
+                for item in score_data:
+                    if item["name"] == selected_name:
+                        selected_item = item
+                        break
+
+                if selected_item:
+                    st.info(f"当前积分：{selected_item['score']} 分")
+                    add_score = st.number_input("输入要增加的分数", step=1, value=0)
+                    submit = st.button("✅ 确认加分", type="primary")
+
+                    if submit and add_score != 0:
+                        selected_item["score"] += int(add_score)
+                        with open(JSON_FILE, "w", encoding="utf-8") as jf:
+                            json.dump(score_data, jf, ensure_ascii=False, indent=2)
+                        st.success(f"✅ 成功给 {selected_name} 加 {add_score} 分！最新积分：{selected_item['score']}")
+                        time.sleep(0.7)
+                        st.rerun()
+
+            else:
+                # 按学号加分
+                input_id = st.text_input("输入学号", placeholder="请输入学号")
+                match_item = None
+                for item in score_data:
+                    if item["id"] == input_id:
+                        match_item = item
+                        break
+
+                if input_id:
+                    if match_item:
+                        st.success(f"找到：{match_item['name']} | {match_item['class']} | 当前积分：{match_item['score']}")
+                        add_score = st.number_input("输入要增加的分数", step=1, value=0, key="add_by_id")
+                        submit = st.button("✅ 确认加分", type="primary")
+
+                        if submit and add_score != 0:
+                            match_item["score"] += int(add_score)
+                            with open(JSON_FILE, "w", encoding="utf-8") as jf:
+                                json.dump(score_data, jf, ensure_ascii=False, indent=2)
+                            st.success(f"✅ 加分成功！最新积分：{match_item['score']}")
+                            time.sleep(0.7)
+                            st.rerun()
+                    else:
+                        st.error("未找到该学号")
 else:
     st.error("非管理员人员不能进入该页面")
