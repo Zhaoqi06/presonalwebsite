@@ -18,22 +18,6 @@ if "password" not in st.session_state:
     st.session_state.password = ""
 
 # ========== 3. 样式优化（适配新版Streamlit） ==========
-st.markdown("""
-    <style>
-    /* 隐藏默认页眉/页脚/水印 */
-    header, footer, [data-testid="stToolbar"] {display: none !important;}
-    /* 登录表单样式 */
-    .stForm {
-        border: none !important;
-        padding: 2rem;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    /* 按钮样式优化 */
-    .stButton>button {width: 100%;}
-    </style>
-""", unsafe_allow_html=True)
 
 # ========== 4. 加载用户数据 ==========
 try:
