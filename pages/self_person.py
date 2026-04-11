@@ -167,6 +167,16 @@ if nav == "荣誉":
             "title1":"广元市新媒体联盟通讯员实习证明",
             "title2":"广元团市委新媒体中心实习",
         },
+        {
+            "image":"./image/中国仿真学会证书.jpg",
+            "title1":"中国仿真学会",
+            "title2":"中国仿真学会学生会员电子证",
+        },
+        {
+            "image":"./image/2025数维杯秋季赛.jpg",
+            "title1":"ShuWei Cup IMCMCertificate of Achievement",
+            "title2":"Successful Participant",
+        },
         ]
 
         st.markdown(
