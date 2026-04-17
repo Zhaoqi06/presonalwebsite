@@ -25,8 +25,8 @@ with col1:
     if st.button("国际交流协会"):
         st.switch_page("pages/association.py")
 with col2:
-    if st.button("协会实时活动排名"):
-        st.switch_page("pages/Rank.py")
+    if st.button("数学研究所"):
+        st.switch_page("pages/studio_math.py")
 with col3:
     if st.button("实用工具"):
         st.switch_page("pages/tool.py")

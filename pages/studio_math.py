@@ -9,6 +9,11 @@ from docx import Document
 from io import BytesIO
 from PIL import Image
 
+if "logged_in" not in st.session_state or not st.session_state.logged_in:
+    st.error("请先登录")
+    st.switch_page("pages/login.py")
+
+
 # ==================== 初始化配置 ====================
 load_dotenv()
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
