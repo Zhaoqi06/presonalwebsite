@@ -13,7 +13,7 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "视频调速","M4A转MP3","批量找图","MOV转MP4"])
+nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "GIF转GIF", "视频调速", "M4A转MP3", "批量找图", "MOV转MP4"])
 
 if nav == "视频转GIF":
     st.title("视频转GIF工具")
@@ -87,6 +87,92 @@ if nav == "视频转GIF":
                             os.remove(video_path)
                         if os.path.exists(gif_filename):
                             os.remove(gif_filename)
+
+elif nav == "GIF转GIF":
+    st.title("GIF优化工具")
+    st.markdown("优化GIF文件大小、调整帧率、修改尺寸或截取部分片段")
+
+    uploaded_file = st.file_uploader("选择GIF文件", type=['gif'])
+
+    if uploaded_file is not None:
+        # 保存上传的文件
+        gif_path = f"temp_gif_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gif"
+        with open(gif_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        # 显示原始GIF预览
+        st.subheader("原始GIF预览")
+        st.image(gif_path)
+
+        # 获取GIF信息
+        try:
+            probe = ffmpeg.probe(gif_path)
+            video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+            if video_streams:
+                video_info = video_streams[0]
+                duration = float(probe['format']['duration'])
+                fps = eval(video_info.get('r_frame_rate', '10/1'))
+                width = int(video_info.get('width', 0))
+                height = int(video_info.get('height', 0))
+                st.info(f"时长: {duration:.2f}秒 | 尺寸: {width}x{height} | 帧率: {fps:.1f}fps")
+        except:
+            pass
+
+        st.subheader("转换参数设置")
+        col1, col2 = st.columns(2)
+        with col1:
+            start_time = st.number_input("开始时间（秒）", 0.0, 100.0, 0.0, 0.1)
+            new_fps = st.slider("目标帧率", 1, 60, 15)
+        with col2:
+            duration_val = st.number_input("持续时长（秒，0表示全部）", 0.0, 100.0, 0.0, 0.1)
+            scale_width = st.slider("目标宽度（像素）", 100, 1920, 480)
+
+        if st.button("优化GIF"):
+            if duration_val > 0 and duration_val <= start_time:
+                st.error("持续时长必须大于开始时间")
+            else:
+                with st.spinner("正在优化GIF..."):
+                    try:
+                        # 生成输出文件名
+                        output_filename = f"optimized_{datetime.now().strftime('%Y%m%d_%H%M%S')}.gif"
+
+                        # 调用GIF转GIF函数
+                        duration = duration_val if duration_val > 0 else None
+
+                        success = fc.gif_to_gif_optimize(
+                            gif_path,
+                            output_filename,
+                            fps=new_fps,
+                            scale_width=scale_width,
+                            start_time=start_time,
+                            duration=duration
+                        )
+
+                        if success:
+                            # 显示结果
+                            st.success("GIF优化成功！")
+                            st.subheader("优化后GIF预览")
+                            st.image(output_filename)
+
+                            # 提供下载
+                            with open(output_filename, "rb") as file:
+                                st.download_button(
+                                    label="下载优化后的GIF",
+                                    data=file,
+                                    file_name=output_filename,
+                                    mime="image/gif"
+                                )
+                        else:
+                            st.error("转换失败")
+
+                    except Exception as e:
+                        st.error(f"转换失败：{str(e)}")
+                    finally:
+                        # 清理临时文件
+                        if os.path.exists(gif_path):
+                            os.remove(gif_path)
+                        if os.path.exists(output_filename):
+                            os.remove(output_filename)
 
 elif nav == "视频调速":
     st.title("视频调速工具")

@@ -652,3 +652,63 @@ def delete_majiang(username):
         st.error(f"删除用户信息出错：{e}")
     finally:
         conn.close()
+
+
+def check_ffmpeg():
+    try:
+        subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
+        return True
+    except:
+        return False
+
+
+def gif_to_gif_optimize(input_file, output_file, fps=15, scale_width=480, start_time=0, duration=None):
+    """
+    GIF转GIF优化函数，可以调整GIF的帧率、尺寸、截取时间段等
+    :param input_file: 输入GIF文件路径
+    :param output_file: 输出GIF文件路径
+    :param fps: 目标帧率
+    :param scale_width: 目标宽度（高度自动计算保持比例）
+    :param start_time: 开始时间（秒）
+    :param duration: 持续时间（秒），None表示处理全部
+    :return: 成功返回True，失败返回False
+    """
+    try:
+        # 创建调色板
+        palette_stream = ffmpeg.input(input_file, ss=start_time)
+        if duration:
+            palette_stream = ffmpeg.trim(palette_stream, duration=duration)
+        else:
+            palette_stream = ffmpeg.setpts(palette_stream, 'PTS-STARTPTS')
+
+        palette_stream = palette_stream.filter('fps', fps=fps)
+        palette_stream = palette_stream.filter('scale', scale_width, -1)
+        palette_stream = palette_stream.filter('palettegen')
+
+        # 生成调色板文件
+        palette_file = "palette_gif.png"
+        ffmpeg.output(palette_stream, palette_file).run(overwrite_output=True)
+
+        # 使用调色板生成优化后的GIF
+        video_stream = ffmpeg.input(input_file, ss=start_time)
+        if duration:
+            video_stream = ffmpeg.trim(video_stream, duration=duration)
+        else:
+            video_stream = ffmpeg.setpts(video_stream, 'PTS-STARTPTS')
+
+        video_stream = video_stream.filter('fps', fps=fps)
+        video_stream = video_stream.filter('scale', scale_width, -1)
+
+        palette_input = ffmpeg.input(palette_file)
+        output_stream = ffmpeg.filter([video_stream, palette_input], 'paletteuse')
+
+        ffmpeg.output(output_stream, output_file).run(overwrite_output=True)
+
+        # 清理临时调色板文件
+        if os.path.exists(palette_file):
+            os.remove(palette_file)
+
+        return True
+    except Exception as e:
+        st.error(f"GIF转换失败: {e}")
+        return False
