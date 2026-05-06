@@ -177,6 +177,11 @@ if nav == "荣誉":
             "title1":"ShuWei Cup IMCMCertificate of Achievement",
             "title2":"Successful Participant",
         },
+        {
+            "image":"./image/第三届四川省大学生职业规划大赛.png",
+            "title1":"第三届全国大学生职业规划大赛",
+            "title2":"省级金奖",
+        },
         ]
 
         st.markdown(
