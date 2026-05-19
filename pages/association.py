@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import os
 import numpy as np
+import json
 st.set_page_config(page_title="协会", layout="wide")
 
 # 拦截未登录用户
@@ -272,65 +273,249 @@ elif nav == "活动风采":
 
 elif nav == "活动选人":
     st.title("活动选人")
-    file_path = None  # 初始化变量
-    try:
-        uploaded_file = st.file_uploader("请上传活动报名表", type=['xlsx'])
 
-        if uploaded_file is not None:
-            # 保存上传的文件
-            file_path = f"temp_excel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+    # 初始化session_state用于保存选择结果
+    if 'selected_result' not in st.session_state:
+        st.session_state.selected_result = None
+    if 'chinese_list' not in st.session_state:
+        st.session_state.chinese_list = []
+    if 'foreign_list' not in st.session_state:
+        st.session_state.foreign_list = []
 
-            st.divider()
-            st.write("本次参加活动人员名单！")
+    uploaded_file = st.file_uploader("请上传活动报名表", type=['xlsx'])
+
+    if uploaded_file is not None:
+        try:
             # 显示原始Excel数据
             df = pd.read_excel(uploaded_file, engine='openpyxl')
+
+            st.divider()
+            st.write("### 本次参加活动人员名单")
             st.dataframe(df, use_container_width=True)
             st.divider()
 
-            st.write("随机选人")
-            # 获取报名人员姓名列表
-            name = []
-            length = len(df.iloc[:, 2])
-            for i in range(2, length):
-                name.append(df.iloc[i, 2])
+            # 获取报名人员信息（假设姓名在第3列C列，国籍在第7列G列，索引从0开始）
+            name_list = []
+            nation_list = []
+
+            # 从第3行开始读取数据（索引2，跳过表头）
+            for i in range(2, len(df)):
+                name_val = df.iloc[i, 2]  # C列：姓名
+                nation_val = df.iloc[i, 6] if len(df.columns) > 6 else ""  # G列：国籍
+
+                # 检查是否为空值
+                if pd.notna(name_val) and str(name_val).strip():
+                    name_list.append(str(name_val).strip())
+                    nation_list.append(str(nation_val).strip() if pd.notna(nation_val) else "")
+
+            # 按国籍分类
+            chinese_names = []
+            foreign_names = []
+
+            for name, nation in zip(name_list, nation_list):
+                # 判断是否为中国籍（包含"中国"或为空时默认为中国籍）
+                if "中国" in nation or nation == "":
+                    chinese_names.append(name)
+                else:
+                    foreign_names.append(name)
+
+            # 保存到session_state
+            st.session_state.chinese_list = chinese_names
+            st.session_state.foreign_list = foreign_names
+
+            st.write("### 随机选人设置")
+            st.info(
+                f"📊 统计信息：总人数 {len(name_list)} 人 | 中国籍 {len(chinese_names)} 人 | 国际学生 {len(foreign_names)} 人")
 
             # 验证是否有有效数据
-            if len(name) == 0:
-                st.warning("没有找到有效的报名人员数据")
+            if len(name_list) == 0:
+                st.warning("⚠️ 没有找到有效的报名人员数据")
             else:
-                # 从报名人员中随机选择
-                col1, col2 = st.columns(2)
-                with col1:
-                    max_count = min(len(name), 10)
-                    selected_count = st.number_input("随机抽选人数", 0, len(name), min(5, len(name)), step=1)
+                # 选择模式
+                col_mode = st.columns(1)
+                with col_mode[0]:
+                    select_mode = st.radio(
+                        "选择模式",
+                        ["混合选择", "仅中国籍", "仅国际学生", "分别选择"],
+                        horizontal=True
+                    )
 
-                with col2:
-                    st.write("")
-                    st.write("")
-                    select_button = st.button("开始选人")
+                st.divider()
 
-                if select_button and selected_count > 0:
-                    selected_names = np.random.choice(name, size=selected_count, replace=False)
+                # 根据模式显示不同的输入框
+                selected_chinese = []
+                selected_foreign = []
 
-                    selected_df = pd.DataFrame({
-                        '选中人员': selected_names
-                    })
+                if select_mode == "混合选择":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        total_select = st.number_input(
+                            "总抽选人数",
+                            min_value=0,
+                            max_value=len(name_list),
+                            value=min(5, len(name_list)),
+                            step=1,
+                            help="从所有报名人员中随机抽取"
+                        )
 
-                    st.table(selected_df)
-                elif select_button and selected_count <= 0:
-                    st.warning("请选择要抽取的人数")
+                    with col2:
+                        st.write("")
+                        st.write("")
+                        select_button = st.button("🎲 开始随机选择", type="primary", use_container_width=True)
 
-    except ValueError as ve:
-        if "Cannot take a larger sample than population" in str(ve):
-            st.error(f"选择人数不能超过可用人员数量")
-        else:
-            st.error(f"数值错误：{str(ve)}")
-    except Exception as e:
-        st.error(f"处理失败：{str(e)}")
-    finally:
-        # 清理临时文件
-        if file_path and os.path.exists(file_path):
-            os.remove(file_path)
+                    if select_button:
+                        if total_select > 0:
+                            all_names = chinese_names + foreign_names
+                            selected_names = np.random.choice(all_names, size=total_select, replace=False)
+                            st.session_state.selected_result = pd.DataFrame({
+                                '选中人员': selected_names,
+                                '类型': ['中国籍' if n in chinese_names else '国际学生' for n in selected_names]
+                            })
+                        else:
+                            st.warning("请选择要抽取的人数")
 
+                elif select_mode == "仅中国籍":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        chinese_select = st.number_input(
+                            "中国籍抽选人数",
+                            min_value=0,
+                            max_value=len(chinese_names),
+                            value=min(5, len(chinese_names)),
+                            step=1,
+                            help=f"共有 {len(chinese_names)} 名中国籍成员"
+                        )
+
+                    with col2:
+                        st.write("")
+                        st.write("")
+                        select_button = st.button("🎲 开始随机选择", type="primary", use_container_width=True)
+
+                    if select_button:
+                        if chinese_select > 0:
+                            selected_chinese = np.random.choice(chinese_names, size=chinese_select, replace=False)
+                            st.session_state.selected_result = pd.DataFrame({
+                                '选中人员': selected_chinese,
+                                '类型': ['中国籍'] * len(selected_chinese)
+                            })
+                        else:
+                            st.warning("请选择要抽取的人数")
+
+                elif select_mode == "仅国际学生":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        foreign_select = st.number_input(
+                            "国际学生抽选人数",
+                            min_value=0,
+                            max_value=len(foreign_names),
+                            value=min(5, len(foreign_names)),
+                            step=1,
+                            help=f"共有 {len(foreign_names)} 名国际学生"
+                        )
+
+                    with col2:
+                        st.write("")
+                        st.write("")
+                        select_button = st.button("🎲 开始随机选择", type="primary", use_container_width=True)
+
+                    if select_button:
+                        if foreign_select > 0:
+                            selected_foreign = np.random.choice(foreign_names, size=foreign_select, replace=False)
+                            st.session_state.selected_result = pd.DataFrame({
+                                '选中人员': selected_foreign,
+                                '类型': ['国际学生'] * len(selected_foreign)
+                            })
+                        else:
+                            st.warning("请选择要抽取的人数")
+
+                elif select_mode == "分别选择":
+                    st.write("#### 分别设置各类型人数")
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        chinese_select = st.number_input(
+                            "中国籍人数",
+                            min_value=0,
+                            max_value=len(chinese_names),
+                            value=min(3, len(chinese_names)),
+                            step=1,
+                            help=f"共有 {len(chinese_names)} 名中国籍成员"
+                        )
+
+                    with col2:
+                        foreign_select = st.number_input(
+                            "国际学生人数",
+                            min_value=0,
+                            max_value=len(foreign_names),
+                            value=min(2, len(foreign_names)),
+                            step=1,
+                            help=f"共有 {len(foreign_names)} 名国际学生"
+                        )
+
+                    with col3:
+                        st.write("")
+                        st.write("")
+                        select_button = st.button("🎲 开始随机选择", type="primary", use_container_width=True)
+
+                    if select_button:
+                        if chinese_select > 0 or foreign_select > 0:
+                            result_data = {'选中人员': [], '类型': []}
+
+                            # 选择中国籍
+                            if chinese_select > 0 and len(chinese_names) > 0:
+                                selected_chinese = np.random.choice(chinese_names, size=chinese_select, replace=False)
+                                result_data['选中人员'].extend(selected_chinese)
+                                result_data['类型'].extend(['中国籍'] * len(selected_chinese))
+
+                            # 选择国际学生
+                            if foreign_select > 0 and len(foreign_names) > 0:
+                                selected_foreign = np.random.choice(foreign_names, size=foreign_select, replace=False)
+                                result_data['选中人员'].extend(selected_foreign)
+                                result_data['类型'].extend(['国际学生'] * len(selected_foreign))
+
+                            st.session_state.selected_result = pd.DataFrame(result_data)
+                        else:
+                            st.warning("请至少选择一个类型的人数")
+
+                # 显示选择结果
+                if st.session_state.selected_result is not None:
+                    st.divider()
+                    st.success(f"✅ 已成功选择 {len(st.session_state.selected_result)} 人")
+
+                    # 按类型分组显示
+                    st.write("### 🎯 选择结果")
+
+                    # 显示统计表
+                    type_count = st.session_state.selected_result['类型'].value_counts()
+                    stats_cols = st.columns(len(type_count))
+                    for idx, (type_name, count) in enumerate(type_count.items()):
+                        with stats_cols[idx]:
+                            st.metric(type_name, f"{count} 人")
+
+                    st.divider()
+
+                    # 显示详细列表
+                    st.dataframe(
+                        st.session_state.selected_result.reset_index(drop=True),
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                    # 提供下载按钮
+                    csv_data = st.session_state.selected_result.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="📥 下载选择结果 (CSV)",
+                        data=csv_data,
+                        file_name=f"选中人员_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+
+        except ValueError as ve:
+            if "Cannot take a larger sample than population" in str(ve):
+                st.error("❌ 选择人数不能超过可用人员数量")
+            else:
+                st.error(f"❌ 数值错误：{str(ve)}")
+        except Exception as e:
+            st.error(f"❌ 处理失败：{str(e)}")
+            st.exception(e)  # 开发时显示详细错误信息
