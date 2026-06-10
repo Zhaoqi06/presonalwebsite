@@ -13,8 +13,10 @@ if "logged_in" not in st.session_state or not st.session_state.logged_in:
 
 
 # 使用 selectbox 实现导航
-nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "GIF转GIF", "视频调速", "M4A转MP3", "批量找图", "MOV转MP4"])
-
+nav = st.sidebar.selectbox("导航栏", ["首页"])
+#nav = st.sidebar.selectbox("导航栏", ["视频转GIF", "GIF转GIF", "视频调速", "M4A转MP3", "批量找图", "MOV转MP4"])
+if nav == "首页":
+    st.error("页面维护中.......")
 if nav == "视频转GIF":
     st.title("视频转GIF工具")
 
